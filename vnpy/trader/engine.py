@@ -51,24 +51,33 @@ class MainEngine:
     """
 
     def __init__(self, event_engine: EventEngine = None) -> None:
-        """"""
-        if event_engine:
+        """
+        主引擎初始化
+
+        :param event_engine: # 获取事件引擎， 没有默认设置空
+        """
+        if event_engine:  # 判断有无事件引擎
             self.event_engine: EventEngine = event_engine
         else:
+            # 没有事件引擎就创建
             self.event_engine = EventEngine()
+        # 启动事件引擎
         self.event_engine.start()
 
+        # 空字典存储配置
         self.gateways: Dict[str, BaseGateway] = {}
-        self.engines: Dict[str, BaseEngine] = {}
-        self.apps: Dict[str, BaseApp] = {}
-        self.exchanges: List[Exchange] = []
+        self.engines: Dict[str, BaseEngine] = {}  # 引擎配置
+        self.apps: Dict[str, BaseApp] = {}  # 子应用
+        self.exchanges: List[Exchange] = []  # 交易所
 
-        os.chdir(TRADER_DIR)    # Change working directory
-        self.init_engines()     # Initialize function engines
+        # os.chdir() 函数会将当前工作目录更改为这个路径
+        os.chdir(TRADER_DIR)  # Change working directory 更改工作目录
+        self.init_engines()  # Initialize function engines 初始化功能引擎
 
-    def add_engine(self, engine_class: Any) -> "BaseEngine":
+    def add_engine(self, engine_class: Any) -> "BaseEngine":  # 参数引擎类
         """
         Add function engine.
+        添加引擎
         """
         engine: BaseEngine = engine_class(self, self.event_engine)
         self.engines[engine.engine_name] = engine
@@ -105,10 +114,11 @@ class MainEngine:
     def init_engines(self) -> None:
         """
         Init all engines.
+        初始化所有引擎。
         """
-        self.add_engine(LogEngine)
+        self.add_engine(LogEngine)  # 初始化登录引擎
         self.add_engine(OmsEngine)
-        self.add_engine(EmailEngine)
+        self.add_engine(EmailEngine)  # 邮箱引擎
 
     def write_log(self, msg: str, source: str = "") -> None:
         """
@@ -243,13 +253,14 @@ class MainEngine:
 class BaseEngine(ABC):
     """
     Abstract class for implementing a function engine.
+    用于实现函数引擎的抽象类。
     """
 
     def __init__(
-        self,
-        main_engine: MainEngine,
-        event_engine: EventEngine,
-        engine_name: str,
+            self,
+            main_engine: MainEngine,
+            event_engine: EventEngine,
+            engine_name: str,
     ) -> None:
         """"""
         self.main_engine: MainEngine = main_engine
@@ -587,11 +598,11 @@ class OmsEngine(BaseEngine):
             converter.update_order_request(req, vt_orderid)
 
     def convert_order_request(
-        self,
-        req: OrderRequest,
-        gateway_name: str,
-        lock: bool,
-        net: bool = False
+            self,
+            req: OrderRequest,
+            gateway_name: str,
+            lock: bool,
+            net: bool = False
     ) -> List[OrderRequest]:
         """
         Convert original order request according to given mode.
@@ -650,7 +661,7 @@ class EmailEngine(BaseEngine):
                 msg: EmailMessage = self.queue.get(block=True, timeout=1)
 
                 with smtplib.SMTP_SSL(
-                    SETTINGS["email.server"], SETTINGS["email.port"]
+                        SETTINGS["email.server"], SETTINGS["email.port"]
                 ) as smtp:
                     smtp.login(
                         SETTINGS["email.username"], SETTINGS["email.password"]

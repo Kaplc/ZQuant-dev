@@ -25,7 +25,6 @@ from vnpy.trader.database import (
 )
 from vnpy.trader.setting import SETTINGS
 
-
 db: PeeweeMySQLDatabase = PeeweeMySQLDatabase(
     database=SETTINGS["database.database"],
     user=SETTINGS["database.user"],
@@ -276,12 +275,12 @@ class MysqlDatabase(BaseDatabase):
         return True
 
     def load_bar_data(
-        self,
-        symbol: str,
-        exchange: Exchange,
-        interval: Interval,
-        start: datetime,
-        end: datetime
+            self,
+            symbol: str,
+            exchange: Exchange,
+            interval: Interval,
+            start: datetime,
+            end: datetime
     ) -> List[BarData]:
         """"""
         s: ModelSelect = (
@@ -315,11 +314,11 @@ class MysqlDatabase(BaseDatabase):
         return bars
 
     def load_tick_data(
-        self,
-        symbol: str,
-        exchange: Exchange,
-        start: datetime,
-        end: datetime
+            self,
+            symbol: str,
+            exchange: Exchange,
+            start: datetime,
+            end: datetime
     ) -> List[TickData]:
         """读取TICK数据"""
         s: ModelSelect = (
@@ -377,10 +376,10 @@ class MysqlDatabase(BaseDatabase):
         return ticks
 
     def delete_bar_data(
-        self,
-        symbol: str,
-        exchange: Exchange,
-        interval: Interval
+            self,
+            symbol: str,
+            exchange: Exchange,
+            interval: Interval
     ) -> int:
         """删除K线数据"""
         d: ModelDelete = DbBarData.delete().where(
@@ -400,9 +399,9 @@ class MysqlDatabase(BaseDatabase):
         return count
 
     def delete_tick_data(
-        self,
-        symbol: str,
-        exchange: Exchange
+            self,
+            symbol: str,
+            exchange: Exchange
     ) -> int:
         """删除TICK数据"""
         d: ModelDelete = DbTickData.delete().where(
@@ -469,25 +468,25 @@ class MysqlDatabase(BaseDatabase):
 
             start_bar: DbBarData = (
                 DbBarData.select()
-                .where(
+                    .where(
                     (DbBarData.symbol == data.symbol)
                     & (DbBarData.exchange == data.exchange)
                     & (DbBarData.interval == data.interval)
                 )
-                .order_by(DbBarData.datetime.asc())
-                .first()
+                    .order_by(DbBarData.datetime.asc())
+                    .first()
             )
             overview.start = start_bar.datetime
 
             end_bar: DbBarData = (
                 DbBarData.select()
-                .where(
+                    .where(
                     (DbBarData.symbol == data.symbol)
                     & (DbBarData.exchange == data.exchange)
                     & (DbBarData.interval == data.interval)
                 )
-                .order_by(DbBarData.datetime.desc())
-                .first()
+                    .order_by(DbBarData.datetime.desc())
+                    .first()
             )
             overview.end = end_bar.datetime
 

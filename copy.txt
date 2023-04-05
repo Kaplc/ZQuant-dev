@@ -1,0 +1,2 @@
+self._queue: Queue = Queue()
+event: Event = self._queue.get(block=True, timeout=1)
