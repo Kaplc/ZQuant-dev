@@ -65,29 +65,34 @@ class MainEngine:
         self.event_engine.start()
 
         # 空字典存储配置
-        self.gateways: Dict[str, BaseGateway] = {}
-        self.engines: Dict[str, BaseEngine] = {}  # 引擎配置
-        self.apps: Dict[str, BaseApp] = {}  # 子应用
-        self.exchanges: List[Exchange] = []  # 交易所
+        self.gateways: Dict[str, BaseGateway] = {}  # 交易所接口字典
+        self.engines: Dict[str, BaseEngine] = {}  # 引擎字典
+        self.apps: Dict[str, BaseApp] = {}  # 子应用字典
+        self.exchanges: List[Exchange] = []  # 交易所字典
 
         # os.chdir() 函数会将当前工作目录更改为这个路径
         os.chdir(TRADER_DIR)  # Change working directory 更改工作目录
         self.init_engines()  # Initialize function engines 初始化功能引擎
 
-    def add_engine(self, engine_class: Any) -> "BaseEngine":  # 参数引擎类
+    def add_engine(self, engine_class: Any) -> "BaseEngine":  # 参数:引擎类
         """
         Add function engine.
         添加引擎
+        在该方法中，首先使用 engine_class 创建一个新的引擎对象 engine，该引擎对象需要两个参数：
+        一个是引擎管理器对象本身，一个是事件引擎（event engine）对象。
+        然后将新创建的引擎对象添加到引擎管理器的 engines 字典中，字典的键是引擎的名称，值是引擎对象。最后，返回新添加的引擎对象 engine
         """
-        engine: BaseEngine = engine_class(self, self.event_engine)
-        self.engines[engine.engine_name] = engine
+        engine: BaseEngine = engine_class(self, self.event_engine)  # 创建新的引擎实例对象
+        self.engines[engine.engine_name] = engine  # 添加新引擎对象进字典
         return engine
 
     def add_gateway(self, gateway_class: Type[BaseGateway], gateway_name: str = "") -> BaseGateway:
         """
         Add gateway.
+        添加与交易所对接网关
+
         """
-        # Use default name if gateway_name not passed
+        # Use default name if gateway_name not passed 如果没有gateway_name，则使用gateway_class的默认名称
         if not gateway_name:
             gateway_name: str = gateway_class.default_name
 
@@ -104,11 +109,12 @@ class MainEngine:
     def add_app(self, app_class: Type[BaseApp]) -> "BaseEngine":
         """
         Add app.
+        子应用
         """
-        app: BaseApp = app_class()
-        self.apps[app.app_name] = app
+        app: BaseApp = app_class()  # 创建app实例
+        self.apps[app.app_name] = app  # 添加 'app.name':app对象 -> self.apps字典
 
-        engine: BaseEngine = self.add_engine(app.engine_class)
+        engine: BaseEngine = self.add_engine(app.engine_class)  # 添加app引擎 -> self.add_engine字典
         return engine
 
     def init_engines(self) -> None:
@@ -116,13 +122,14 @@ class MainEngine:
         Init all engines.
         初始化所有引擎。
         """
-        self.add_engine(LogEngine)  # 初始化登录引擎
-        self.add_engine(OmsEngine)
-        self.add_engine(EmailEngine)  # 邮箱引擎
+        self.add_engine(LogEngine)  # 添加登录引擎
+        self.add_engine(OmsEngine)  # 订单管理引擎
+        self.add_engine(EmailEngine)  # 添加邮箱引擎
 
     def write_log(self, msg: str, source: str = "") -> None:
         """
         Put log event with specific message.
+        将日志事件与特定消息一起放入
         """
         log: LogData = LogData(msg=msg, gateway_name=source)
         event: Event = Event(EVENT_LOG, log)
@@ -131,6 +138,7 @@ class MainEngine:
     def get_gateway(self, gateway_name: str) -> BaseGateway:
         """
         Return gateway object by name.
+        按名称返回网关对象
         """
         gateway: BaseGateway = self.gateways.get(gateway_name, None)
         if not gateway:
@@ -140,6 +148,7 @@ class MainEngine:
     def get_engine(self, engine_name: str) -> "BaseEngine":
         """
         Return engine object by name.
+        获取引擎名字
         """
         engine: BaseEngine = self.engines.get(engine_name, None)
         if not engine:
@@ -254,6 +263,9 @@ class BaseEngine(ABC):
     """
     Abstract class for implementing a function engine.
     用于实现函数引擎的抽象类。
+
+    采用了抽象基类（ABC）的方式，表示这是一个抽象类。抽象类是指不能被直接实例化的类，
+    它的主要作用是提供一组接口定义，让子类实现这些接口来完成具体的功能
     """
 
     def __init__(
@@ -350,6 +362,7 @@ class LogEngine(BaseEngine):
 class OmsEngine(BaseEngine):
     """
     Provides order management system function.
+    提供订单管理系统功能。
     """
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
