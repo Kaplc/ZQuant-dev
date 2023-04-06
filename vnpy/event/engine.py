@@ -53,11 +53,11 @@ class EventEngine:
         """
         self._interval: int = interval  # 时间间隔， 下划线前缀'_'表示该变量是类内部使用
         self._queue: Queue = Queue()  # Queue是Python标准库中的一个线程安全队列，可以用于实现多线程间的数据传输
-        self._active: bool = False  # 活动参数， 默认false
-        self._thread: Thread = Thread(target=self._run)  # 启动多线程执行self._run
-        self._timer: Thread = Thread(target=self._run_timer)  # 同上
+        self._active: bool = False  # 活动参数, 默认false
+        self._thread: Thread = Thread(target=self._run)  # 用多线程执行self._run
+        self._timer: Thread = Thread(target=self._run_timer)  # 用多线程执行self._run_timer
         self._handlers: defaultdict = defaultdict(list)  # 当_handlers字典中的键不存在时，会自动创建一个空列表，并将其作为默认值
-        self._general_handlers: List = []
+        self._general_handlers: List = []  # 全体事件处理函数
 
     def _run(self) -> None:
         """
@@ -94,7 +94,7 @@ class EventEngine:
     def _run_timer(self) -> None:
         """
         Sleep by interval second(s) and then generate a timer event.
-        按间隔秒休眠，然后生成计时器事件。
+        按间隔秒休眠，然后生成计时器事件
         """
         while self._active:
             sleep(self._interval)
@@ -106,58 +106,78 @@ class EventEngine:
     def start(self) -> None:
         """
         Start event engine to process events and generate timer events.
+        启动事件引擎以处理事件并生成计时器事件
         """
-        self._active = True
-        self._thread.start()
-        self._timer.start()
+        self._active = True  # 启用标志
+        self._thread.start()  # 开启多线程执行self._run
+        self._timer.start()  # 开启多线程执行self._run_timer
 
     def stop(self) -> None:
         """
         Stop event engine.
+        停止事件引擎
         """
-        self._active = False
-        self._timer.join()
+        self._active = False  # 停用标志
+        self._timer.join()  # join()会阻塞等待self._timer线程完成,确保在程序退出之前，所有的计时器事件都已被正确处理或停止
         self._thread.join()
 
     def put(self, event: Event) -> None:
         """
         Put an event object into event queue.
-        将事件对象放入事件队列。
+        将事件对象放入事件队列
         """
         self._queue.put(event)
 
     def register(self, type: str, handler: HandlerType) -> None:
         """
-        Register a new handler function for a specific event type. Every
-        function can only be registered once for each event type.
+        Register a new handler function for a specific event type.
+        Every function can only be registered once for each event type.
+
+        为特定的事件类型注册一个新的处理程序函数
+        对于每个事件类型，每个函数只能注册一次
+
+        字典self._handlers数据结构：
+        {
+            'type':[handler1, handler2, ...],
+            ...
+        }
         """
-        handler_list: list = self._handlers[type]
+        handler_list: list = self._handlers[type]  # 获取处理type类型事件的函数列表
         if handler not in handler_list:
-            handler_list.append(handler)
+            handler_list.append(handler)  # 添加handler处理函数
 
     def unregister(self, type: str, handler: HandlerType) -> None:
         """
         Unregister an existing handler function from event engine.
+
+        从事件引擎中注销现有的处理程序函数
+
+
         """
-        handler_list: list = self._handlers[type]
+        handler_list: list = self._handlers[type]  # 获取处理type类型事件的函数列表
 
         if handler in handler_list:
-            handler_list.remove(handler)
+            handler_list.remove(handler)  # 删除handler_list列表handler类型的处理函数
 
         if not handler_list:
-            self._handlers.pop(type)
+            self._handlers.pop(type)  # 删除_handlers字典的键为type的处理函数列表
 
     def register_general(self, handler: HandlerType) -> None:
         """
-        Register a new handler function for all event types. Every
-        function can only be registered once for each event type.
+        Register a new handler function for all event types.
+        Every function can only be registered once for each event type.
+
+        从事件引擎中注销现有的处理程序函数
+        对于每个事件类型，每个函数只能注册一次
         """
         if handler not in self._general_handlers:
-            self._general_handlers.append(handler)
+            self._general_handlers.append(handler)  # 添加处理函数进全体处理函数列表
 
     def unregister_general(self, handler: HandlerType) -> None:
         """
         Unregister an existing general handler function.
+
+        注销现有的常规处理程序函数
         """
         if handler in self._general_handlers:
-            self._general_handlers.remove(handler)
+            self._general_handlers.remove(handler)  # 删除处理函数进全体处理函数列表
