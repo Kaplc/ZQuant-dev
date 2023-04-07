@@ -16,10 +16,11 @@ class BaseData:
     """
     Any data object needs a gateway_name as source
     and should inherit base data.
+    任何数据对象都需要gateway_name作为源，并且应该继承基本数据
     """
 
     gateway_name: str
-
+    # 给extra属性设置默认值default=None， 不参与初始化init=False
     extra: dict = field(default=None, init=False)
 
 
@@ -213,9 +214,19 @@ class AccountData(BaseData):
 
 
 @dataclass
+# 自动生成下面方法
+# 初始化方法（init）：自动生成初始化方法，可以根据类中定义的属性来初始化对象。
+# 字符串表示方法（repr）：自动生成字符串表示方法，可以让我们方便地查看和调试对象的值。
+#
+# 相等性比较方法（eq）：自动生成相等性比较方法，可以用来比较两个对象是否相等。
+#
+# 哈希方法（hash）：自动生成哈希方法，可以让对象被用作字典的键。
+#
+# 读取和修改属性的方法（getattr、setattr、delattr）：自动生成这些方法，可以方便地读取、修改和删除对象的属性
 class LogData(BaseData):
     """
     Log data is used for recording log messages on GUI or in log files.
+    日志数据用于在GUI或日志文件中记录日志消息。
     """
 
     msg: str
@@ -223,7 +234,7 @@ class LogData(BaseData):
 
     def __post_init__(self) -> None:
         """"""
-        self.time: datetime = datetime.now()
+        self.time: datetime = datetime.now()  # 获取当前时间
 
 
 @dataclass
@@ -239,18 +250,18 @@ class ContractData(BaseData):
     size: float
     pricetick: float
 
-    min_volume: float = 1           # minimum trading volume of the contract
-    stop_supported: bool = False    # whether server supports stop order
-    net_position: bool = False      # whether gateway uses net position volume
-    history_data: bool = False      # whether gateway provides bar history data
+    min_volume: float = 1  # minimum trading volume of the contract
+    stop_supported: bool = False  # whether server supports stop order
+    net_position: bool = False  # whether gateway uses net position volume
+    history_data: bool = False  # whether gateway provides bar history data
 
     option_strike: float = 0
-    option_underlying: str = ""     # vt_symbol of underlying contract
+    option_underlying: str = ""  # vt_symbol of underlying contract
     option_type: OptionType = None
     option_listed: datetime = None
     option_expiry: datetime = None
     option_portfolio: str = ""
-    option_index: str = ""          # for identifying options with same strike price
+    option_index: str = ""  # for identifying options with same strike price
 
     def __post_init__(self) -> None:
         """"""

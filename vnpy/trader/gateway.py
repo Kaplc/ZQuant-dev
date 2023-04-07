@@ -71,7 +71,7 @@ class BaseGateway(ABC):
 
     """
 
-    # Default name for the gateway.
+    # Default name for the gateway. 交易接口默认名字
     default_name: str = ""
 
     # Fields required in setting dict for connect function.

@@ -97,12 +97,12 @@ class MainEngine:
             gateway_name: str = gateway_class.default_name
 
         gateway: BaseGateway = gateway_class(self.event_engine, gateway_name)
-        self.gateways[gateway_name] = gateway
+        self.gateways[gateway_name] = gateway  # 新交易所接口实例添加进字典
 
         # Add gateway supported exchanges into engine
         for exchange in gateway.exchanges:
             if exchange not in self.exchanges:
-                self.exchanges.append(exchange)
+                self.exchanges.append(exchange)  # 交易所添加进字典
 
         return gateway
 
@@ -131,14 +131,14 @@ class MainEngine:
         Put log event with specific message.
         将日志事件与特定消息一起放入
         """
-        log: LogData = LogData(msg=msg, gateway_name=source)
-        event: Event = Event(EVENT_LOG, log)
-        self.event_engine.put(event)
+        log: LogData = LogData(msg=msg, gateway_name=source)  # 创建日志数据实例
+        event: Event = Event(EVENT_LOG, log)  # 生成日志事件
+        self.event_engine.put(event)  # 加入事件处理队列
 
     def get_gateway(self, gateway_name: str) -> BaseGateway:
         """
         Return gateway object by name.
-        按名称返回网关对象
+        获取交易接口名称
         """
         gateway: BaseGateway = self.gateways.get(gateway_name, None)
         if not gateway:
@@ -158,6 +158,7 @@ class MainEngine:
     def get_default_setting(self, gateway_name: str) -> Optional[Dict[str, Any]]:
         """
         Get default setting dict of a specific gateway.
+        获取交易接口配置信息
         """
         gateway: BaseGateway = self.get_gateway(gateway_name)
         if gateway:
@@ -167,32 +168,37 @@ class MainEngine:
     def get_all_gateway_names(self) -> List[str]:
         """
         Get all names of gateway added in main engine.
+        获取所有交易接口名字
         """
         return list(self.gateways.keys())
 
     def get_all_apps(self) -> List[BaseApp]:
         """
         Get all app objects.
+        获取所有子应用对象
         """
         return list(self.apps.values())
 
     def get_all_exchanges(self) -> List[Exchange]:
         """
         Get all exchanges.
+        获取所有交易所
         """
         return self.exchanges
 
     def connect(self, setting: dict, gateway_name: str) -> None:
         """
         Start connection of a specific gateway.
+        交易接口开启链接
         """
         gateway: BaseGateway = self.get_gateway(gateway_name)
         if gateway:
-            gateway.connect(setting)
+            gateway.connect(setting)  # 载入配置信息并链接
 
     def subscribe(self, req: SubscribeRequest, gateway_name: str) -> None:
         """
         Subscribe tick data update of a specific gateway.
+        订阅交易所数据更新
         """
         gateway: BaseGateway = self.get_gateway(gateway_name)
         if gateway:
@@ -201,6 +207,7 @@ class MainEngine:
     def send_order(self, req: OrderRequest, gateway_name: str) -> str:
         """
         Send new order request to a specific gateway.
+        通过交易接口向交易所发送新订单请求
         """
         gateway: BaseGateway = self.get_gateway(gateway_name)
         if gateway:
@@ -211,6 +218,7 @@ class MainEngine:
     def cancel_order(self, req: CancelRequest, gateway_name: str) -> None:
         """
         Send cancel order request to a specific gateway.
+        取消订单
         """
         gateway: BaseGateway = self.get_gateway(gateway_name)
         if gateway:
@@ -219,6 +227,7 @@ class MainEngine:
     def send_quote(self, req: QuoteRequest, gateway_name: str) -> str:
         """
         Send new quote request to a specific gateway.
+        发送新委托
         """
         gateway: BaseGateway = self.get_gateway(gateway_name)
         if gateway:
@@ -229,6 +238,7 @@ class MainEngine:
     def cancel_quote(self, req: CancelRequest, gateway_name: str) -> None:
         """
         Send cancel quote request to a specific gateway.
+        取消委托
         """
         gateway: BaseGateway = self.get_gateway(gateway_name)
         if gateway:
@@ -237,6 +247,7 @@ class MainEngine:
     def query_history(self, req: HistoryRequest, gateway_name: str) -> Optional[List[BarData]]:
         """
         Query bar history data from a specific gateway.
+        查询历史数据
         """
         gateway: BaseGateway = self.get_gateway(gateway_name)
         if gateway:
@@ -248,14 +259,15 @@ class MainEngine:
         """
         Make sure every gateway and app is closed properly before
         programme exit.
+        关闭主引擎
         """
         # Stop event engine first to prevent new timer event.
-        self.event_engine.stop()
+        self.event_engine.stop()  # 停止事件引擎
 
-        for engine in self.engines.values():
+        for engine in self.engines.values():  # 遍历所有引擎对象并关闭
             engine.close()
 
-        for gateway in self.gateways.values():
+        for gateway in self.gateways.values():  # 遍历所有交易接口对象并关闭
             gateway.close()
 
 
