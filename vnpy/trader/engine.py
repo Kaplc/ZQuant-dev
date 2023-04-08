@@ -296,6 +296,7 @@ class BaseEngine(ABC):
         pass
 
 
+
 class LogEngine(BaseEngine):
     """
     Processes log event and output with logging module.
