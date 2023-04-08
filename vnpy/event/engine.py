@@ -144,7 +144,7 @@ class EventEngine:
         """
         handler_list: list = self._handlers[type]  # 获取处理type类型事件的函数列表
         if handler not in handler_list:
-            handler_list.append(handler)  # 添加handler处理函数
+            handler_list.append(handler)  # 添加handler处理函数(对象)
 
     def unregister(self, type: str, handler: HandlerType) -> None:
         """

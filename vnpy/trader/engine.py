@@ -122,7 +122,7 @@ class MainEngine:
         Init all engines.
         初始化所有引擎。
         """
-        self.add_engine(LogEngine)  # 添加登录引擎
+        self.add_engine(LogEngine)  # 添加日志引擎
         self.add_engine(OmsEngine)  # 订单管理引擎
         self.add_engine(EmailEngine)  # 添加邮箱引擎
 
@@ -287,36 +287,37 @@ class BaseEngine(ABC):
             engine_name: str,
     ) -> None:
         """"""
-        self.main_engine: MainEngine = main_engine
-        self.event_engine: EventEngine = event_engine
-        self.engine_name: str = engine_name
+        self.main_engine: MainEngine = main_engine  # 定义主引擎
+        self.event_engine: EventEngine = event_engine  # 定义事件引擎
+        self.engine_name: str = engine_name  # 定义引擎名字
 
     def close(self) -> None:
         """"""
         pass
 
 
-
 class LogEngine(BaseEngine):
     """
     Processes log event and output with logging module.
+    使用日志模块处理日志事件和输出。
     """
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
         """"""
+        # super(LogEngine, self)-获取 "LogEngine" 类的父类对象，返回一个父类的对象，该对象允许我们调用父类的方法
         super(LogEngine, self).__init__(main_engine, event_engine, "log")
 
-        if not SETTINGS["log.active"]:
+        if not SETTINGS["log.active"]:  # 判断从配置文件日志是否需要启动
             return
 
-        self.level: int = SETTINGS["log.level"]
+        self.level: int = SETTINGS["log.level"]  # 日志等级
 
-        self.logger: Logger = logging.getLogger("veighna")
-        self.logger.setLevel(self.level)
+        self.logger: Logger = logging.getLogger("veighna")  # 以"veighna"命名生成日志器对象
+        self.logger.setLevel(self.level)  # 设置日志器输出日志等级
 
         self.formatter: logging.Formatter = logging.Formatter(
             "%(asctime)s  %(levelname)s: %(message)s"
-        )
+        )  # 日志输出格式
 
         self.add_null_handler()
 
@@ -331,6 +332,7 @@ class LogEngine(BaseEngine):
     def add_null_handler(self) -> None:
         """
         Add null handler for logger.
+        临时输出日志不保存
         """
         null_handler: logging.NullHandler = logging.NullHandler()
         self.logger.addHandler(null_handler)
@@ -338,6 +340,7 @@ class LogEngine(BaseEngine):
     def add_console_handler(self) -> None:
         """
         Add console output of log.
+        控制台输出日志记录
         """
         console_handler: logging.StreamHandler = logging.StreamHandler()
         console_handler.setLevel(self.level)
@@ -347,6 +350,7 @@ class LogEngine(BaseEngine):
     def add_file_handler(self) -> None:
         """
         Add file output of log.
+        文件保存日志
         """
         today_date: str = datetime.now().strftime("%Y%m%d")
         filename: str = f"vt_{today_date}.log"
@@ -362,14 +366,14 @@ class LogEngine(BaseEngine):
 
     def register_event(self) -> None:
         """"""
-        self.event_engine.register(EVENT_LOG, self.process_log_event)
+        self.event_engine.register(EVENT_LOG, self.process_log_event)  # 将事件类型和处理函数穿入事件引擎注册
 
     def process_log_event(self, event: Event) -> None:
         """
         Process log event.
         """
         log: LogData = event.data
-        self.logger.log(log.level, log.msg)
+        self.logger.log(log.level, log.msg)  # 记录日志信息
 
 
 class OmsEngine(BaseEngine):

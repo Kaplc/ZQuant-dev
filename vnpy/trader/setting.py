@@ -8,14 +8,13 @@ from tzlocal import get_localzone_name
 
 from .utility import load_json
 
-
 SETTINGS: Dict[str, Any] = {
     "font.family": "微软雅黑",
     "font.size": 12,
 
-    "log.active": True,
-    "log.level": CRITICAL,
-    "log.console": True,
+    "log.active": True,  # 日志启用
+    "log.level": CRITICAL,  # 记录等级
+    "log.console": True,  #
     "log.file": True,
 
     "email.server": "smtp.qq.com",
@@ -37,7 +36,6 @@ SETTINGS: Dict[str, Any] = {
     "database.user": "",
     "database.password": ""
 }
-
 
 # Load global setting from json file.
 SETTING_FILENAME: str = "vt_setting.json"
