@@ -305,7 +305,7 @@ class LogEngine(BaseEngine):
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
         """"""
         # super(LogEngine, self)-获取 "LogEngine" 类的父类对象，返回一个父类的对象，该对象允许我们调用父类的方法
-        super(LogEngine, self).__init__(main_engine, event_engine, "log")
+        super(LogEngine, self).__init__(main_engine, event_engine, "log")  # 调用BaseEngine的init方法
 
         if not SETTINGS["log.active"]:  # 判断从配置文件日志是否需要启动
             return
@@ -384,7 +384,7 @@ class OmsEngine(BaseEngine):
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
         """"""
-        super(OmsEngine, self).__init__(main_engine, event_engine, "oms")
+        super(OmsEngine, self).__init__(main_engine, event_engine, "oms")  # 调用BaseEngine的init方法
 
         self.ticks: Dict[str, TickData] = {}
         self.orders: Dict[str, OrderData] = {}
@@ -654,17 +654,18 @@ class OmsEngine(BaseEngine):
 class EmailEngine(BaseEngine):
     """
     Provides email sending function.
+    发送邮件引擎
     """
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
         """"""
         super(EmailEngine, self).__init__(main_engine, event_engine, "email")
 
-        self.thread: Thread = Thread(target=self.run)
-        self.queue: Queue = Queue()
-        self.active: bool = False
+        self.thread: Thread = Thread(target=self.run)  # 多线程异步执行
+        self.queue: Queue = Queue()  # 创建邮件处理队列对象
+        self.active: bool = False  # 发送邮件引擎启动标识
 
-        self.main_engine.send_email = self.send_email
+        self.main_engine.send_email = self.send_email  # 定义主引擎直接调用发送邮件方法
 
     def send_email(self, subject: str, content: str, receiver: str = "") -> None:
         """"""
@@ -672,38 +673,39 @@ class EmailEngine(BaseEngine):
         if not self.active:
             self.start()
 
-        # Use default receiver if not specified.
+        # Use default receiver if not specified. # 没有传入收件人邮箱，使用配置默认邮箱
         if not receiver:
             receiver: str = SETTINGS["email.receiver"]
 
+        # 发送邮件
         msg: EmailMessage = EmailMessage()
-        msg["From"] = SETTINGS["email.sender"]
-        msg["To"] = receiver
-        msg["Subject"] = subject
-        msg.set_content(content)
+        msg["From"] = SETTINGS["email.sender"]  # 发件人
+        msg["To"] = receiver  # 收件人
+        msg["Subject"] = subject  # 标题
+        msg.set_content(content)  # 内容
 
-        self.queue.put(msg)
+        self.queue.put(msg)  # 加入处理队列
 
     def run(self) -> None:
         """"""
         while self.active:
             try:
-                msg: EmailMessage = self.queue.get(block=True, timeout=1)
+                msg: EmailMessage = self.queue.get(block=True, timeout=1)  # 取出队列任务
 
-                with smtplib.SMTP_SSL(
+                with smtplib.SMTP_SSL(  # 传入邮件服务器的地址和端口号
                         SETTINGS["email.server"], SETTINGS["email.port"]
                 ) as smtp:
-                    smtp.login(
+                    smtp.login(  # 登录邮箱
                         SETTINGS["email.username"], SETTINGS["email.password"]
                     )
-                    smtp.send_message(msg)
+                    smtp.send_message(msg)  # 发送邮件
             except Empty:
                 pass
 
     def start(self) -> None:
         """"""
         self.active = True
-        self.thread.start()
+        self.thread.start()  # 多线程执行self.run()
 
     def close(self) -> None:
         """"""
@@ -711,4 +713,4 @@ class EmailEngine(BaseEngine):
             return
 
         self.active = False
-        self.thread.join()
+        self.thread.join()  # 等待线程任务完成后关闭
