@@ -22,8 +22,8 @@ class Event:
 
     def __init__(self, type: str, data: Any = None) -> None:
         """"""
-        self.type: str = type
-        self.data: Any = data
+        self.type: str = type  # 事件对象类型
+        self.data: Any = data  # 事件对象数据
 
 
 # Defines handler function to be used in event engine.
@@ -66,10 +66,10 @@ class EventEngine:
         """
         while self._active:
             try:
-                # 尝试等待事件发生, 方法是阻塞, 最多等待1秒钟, 超过抛出Empty异常
+                # 尝试等待事件发生, 方法是阻塞, 最多等待1秒钟, 超过抛出Empty异常(或处理队列为空）
                 # event变量将包含队列中的一个事件
-                event: Event = self._queue.get(block=True, timeout=1)
-                self._process(event)
+                event: Event = self._queue.get(block=True, timeout=1)  # 取出事件对象
+                self._process(event)  # 执行处理
             except Empty:
                 pass
 
@@ -84,9 +84,9 @@ class EventEngine:
         首先将事件分发给那些注册侦听此类型的处理程序。
         然后将事件分发给那些侦听所有类型的通用处理程序。
         """
-        # 检查event对象的type属性是否在self._handlers字典中
+
         if event.type in self._handlers:
-            [handler(event) for handler in self._handlers[event.type]]
+            [handler(event) for handler in self._handlers[event.type]]  # 取出对应事件类型的处理函数并执行处理函数
 
         if self._general_handlers:
             [handler(event) for handler in self._general_handlers]
@@ -94,10 +94,10 @@ class EventEngine:
     def _run_timer(self) -> None:
         """
         Sleep by interval second(s) and then generate a timer event.
-        按间隔秒休眠，然后生成计时器事件
+        按间隔秒休眠，然后生成定时处理事件
         """
         while self._active:
-            sleep(self._interval)
+            sleep(self._interval)  # 时间间隔
             # 创建eTimer类型的事件对象给event
             event: Event = Event(EVENT_TIMER)
             # 调用put方法加入处理队列
@@ -142,9 +142,9 @@ class EventEngine:
             ...
         }
         """
-        handler_list: list = self._handlers[type]  # 获取处理type类型事件的函数列表
+        handler_list: list = self._handlers[type]  # 获取处理type类型事件的处理函数列表
         if handler not in handler_list:
-            handler_list.append(handler)  # 添加handler处理函数(对象)
+            handler_list.append(handler)  # 添加handler处理函数(对象)到处理函数列表
 
     def unregister(self, type: str, handler: HandlerType) -> None:
         """
@@ -152,15 +152,14 @@ class EventEngine:
 
         从事件引擎中注销现有的处理程序函数
 
-
         """
         handler_list: list = self._handlers[type]  # 获取处理type类型事件的函数列表
 
-        if handler in handler_list:
-            handler_list.remove(handler)  # 删除handler_list列表handler类型的处理函数
+        if handler in handler_list:  # 处理函数列表中删除处理函数
+            handler_list.remove(handler)
 
-        if not handler_list:
-            self._handlers.pop(type)  # 删除_handlers字典的键为type的处理函数列表
+        if not handler_list:  # 该事件类型的处理函数列表为空则删除空列表
+            self._handlers.pop(type)
 
     def register_general(self, handler: HandlerType) -> None:
         """
@@ -171,7 +170,7 @@ class EventEngine:
         对于每个事件类型，每个函数只能注册一次
         """
         if handler not in self._general_handlers:
-            self._general_handlers.append(handler)  # 添加处理函数进全体处理函数列表
+            self._general_handlers.append(handler)  # 添加处理函数进通用处理函数列表
 
     def unregister_general(self, handler: HandlerType) -> None:
         """
@@ -180,4 +179,4 @@ class EventEngine:
         注销现有的常规处理程序函数
         """
         if handler in self._general_handlers:
-            self._general_handlers.remove(handler)  # 删除处理函数进全体处理函数列表
+            self._general_handlers.remove(handler)  # 删除处理函数进通用处理函数列表

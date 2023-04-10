@@ -18,7 +18,7 @@ class BaseData:
     and should inherit base data.
     任何数据对象都需要gateway_name作为源，并且应该继承基本数据
     """
-
+    # 属于哪个交易接口的名称
     gateway_name: str
     # 给extra属性设置默认值default=None， 不参与初始化init=False
     extra: dict = field(default=None, init=False)
@@ -31,9 +31,14 @@ class TickData(BaseData):
         * last trade in market
         * orderbook snapshot
         * intraday market statistics.
+
+    Tick数据包含以下信息：
+        *上次市场交易
+        *订单快照
+        *盘中市场统计数据
     """
 
-    symbol: str
+    symbol: str  # 交易标的
     exchange: Exchange
     datetime: datetime
 
@@ -273,6 +278,7 @@ class QuoteData(BaseData):
     """
     Quote data contains information for tracking lastest status
     of a specific quote.
+    报价数据对象
     """
 
     symbol: str

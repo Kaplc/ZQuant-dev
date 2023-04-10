@@ -299,7 +299,7 @@ class BaseEngine(ABC):
 class LogEngine(BaseEngine):
     """
     Processes log event and output with logging module.
-    使用日志模块处理日志事件和输出。
+    使用日志模块处理日志事件和输出
     """
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:
@@ -386,18 +386,18 @@ class OmsEngine(BaseEngine):
         """"""
         super(OmsEngine, self).__init__(main_engine, event_engine, "oms")  # 调用BaseEngine的init方法
 
-        self.ticks: Dict[str, TickData] = {}
-        self.orders: Dict[str, OrderData] = {}
-        self.trades: Dict[str, TradeData] = {}
-        self.positions: Dict[str, PositionData] = {}
-        self.accounts: Dict[str, AccountData] = {}
-        self.contracts: Dict[str, ContractData] = {}
-        self.quotes: Dict[str, QuoteData] = {}
+        self.ticks: Dict[str, TickData] = {}  # 键-交易品种的代码， 值-TickData对象
+        self.orders: Dict[str, OrderData] = {}  # 订单的唯一标识符 - 订单对象
+        self.trades: Dict[str, TradeData] = {}  # 交易的唯一标识符 - 交易的成交信息
+        self.positions: Dict[str, PositionData] = {}  # 交易品种 - 持仓信息
+        self.accounts: Dict[str, AccountData] = {}  # 交易账户 - 资金信息
+        self.contracts: Dict[str, ContractData] = {}  # 交易品种 - 合约信息
+        self.quotes: Dict[str, QuoteData] = {}  # 交易品种 - 报价数据
 
-        self.active_orders: Dict[str, OrderData] = {}
-        self.active_quotes: Dict[str, QuoteData] = {}
+        self.active_orders: Dict[str, OrderData] = {}  # 活动订单(未成交或部分成交): 订单的唯一标识符 - 订单对象
+        self.active_quotes: Dict[str, QuoteData] = {}  # 活动Quote(未成交或部分成交): 交易品种 - 报价数据
 
-        self.offset_converters: Dict[str, OffsetConverter] = {}
+        self.offset_converters: Dict[str, OffsetConverter] = {}  # 交易时区转换
 
         self.add_function()
         self.register_event()
@@ -427,7 +427,7 @@ class OmsEngine(BaseEngine):
         self.main_engine.get_converter = self.get_converter
 
     def register_event(self) -> None:
-        """"""
+        """注册事件"""
         self.event_engine.register(EVENT_TICK, self.process_tick_event)
         self.event_engine.register(EVENT_ORDER, self.process_order_event)
         self.event_engine.register(EVENT_TRADE, self.process_trade_event)
@@ -437,20 +437,20 @@ class OmsEngine(BaseEngine):
         self.event_engine.register(EVENT_QUOTE, self.process_quote_event)
 
     def process_tick_event(self, event: Event) -> None:
-        """"""
+        """处理tick事件"""
         tick: TickData = event.data
-        self.ticks[tick.vt_symbol] = tick
+        self.ticks[tick.vt_symbol] = tick  # tick.vt_symbol:tick对象 写入字典
 
     def process_order_event(self, event: Event) -> None:
-        """"""
+        """处理委托"""
         order: OrderData = event.data
         self.orders[order.vt_orderid] = order
 
         # If order is active, then update data in dict.
-        if order.is_active():
+        if order.is_active():  # 更新委托
             self.active_orders[order.vt_orderid] = order
         # Otherwise, pop inactive order from in dict
-        elif order.vt_orderid in self.active_orders:
+        elif order.vt_orderid in self.active_orders:  # 删除过期委托
             self.active_orders.pop(order.vt_orderid)
 
         # Update to offset converter
