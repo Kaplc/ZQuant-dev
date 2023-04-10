@@ -397,7 +397,7 @@ class OmsEngine(BaseEngine):
         self.active_orders: Dict[str, OrderData] = {}  # 活动订单(未成交或部分成交): 订单的唯一标识符 - 订单对象
         self.active_quotes: Dict[str, QuoteData] = {}  # 活动Quote(未成交或部分成交): 交易品种 - 报价数据
 
-        self.offset_converters: Dict[str, OffsetConverter] = {}  # 交易时区转换
+        self.offset_converters: Dict[str, OffsetConverter] = {}  # 交易时区转换器
 
         self.add_function()
         self.register_event()
@@ -439,12 +439,12 @@ class OmsEngine(BaseEngine):
     def process_tick_event(self, event: Event) -> None:
         """处理tick事件"""
         tick: TickData = event.data
-        self.ticks[tick.vt_symbol] = tick  # tick.vt_symbol:tick对象 写入字典
+        self.ticks[tick.vt_symbol] = tick  # # 品种.交易所名称 - tick信息对象
 
     def process_order_event(self, event: Event) -> None:
-        """处理委托"""
+        """处理订单委托"""
         order: OrderData = event.data
-        self.orders[order.vt_orderid] = order
+        self.orders[order.vt_orderid] = order  # 添加订单信息对象
 
         # If order is active, then update data in dict.
         if order.is_active():  # 更新委托
@@ -453,150 +453,165 @@ class OmsEngine(BaseEngine):
         elif order.vt_orderid in self.active_orders:  # 删除过期委托
             self.active_orders.pop(order.vt_orderid)
 
-        # Update to offset converter
+        # Update to offset converter 字典中get出对应交易所名称的时区转换器
         converter: OffsetConverter = self.offset_converters.get(order.gateway_name, None)
         if converter:
             converter.update_order(order)
 
     def process_trade_event(self, event: Event) -> None:
-        """"""
+        """交易"""
         trade: TradeData = event.data
-        self.trades[trade.vt_tradeid] = trade
+        self.trades[trade.vt_tradeid] = trade  # 添加交易信息对象
 
-        # Update to offset converter
+        # Update to offset converter 获取时区转换器
         converter: OffsetConverter = self.offset_converters.get(trade.gateway_name, None)
         if converter:
             converter.update_trade(trade)
 
     def process_position_event(self, event: Event) -> None:
-        """"""
+        """持仓"""
         position: PositionData = event.data
-        self.positions[position.vt_positionid] = position
+        self.positions[position.vt_positionid] = position  # 添加持仓信息对象
 
-        # Update to offset converter
+        # Update to offset converter 获取时区转换器
         converter: OffsetConverter = self.offset_converters.get(position.gateway_name, None)
         if converter:
             converter.update_position(position)
 
     def process_account_event(self, event: Event) -> None:
-        """"""
+        """账户"""
         account: AccountData = event.data
-        self.accounts[account.vt_accountid] = account
+        self.accounts[account.vt_accountid] = account  # 添加持仓信息对象
 
     def process_contract_event(self, event: Event) -> None:
-        """"""
+        """合约"""
         contract: ContractData = event.data
-        self.contracts[contract.vt_symbol] = contract
+        self.contracts[contract.vt_symbol] = contract  # 添加合约信息对象
 
-        # Initialize offset converter for each gateway
+        # Initialize offset converter for each gateway 初始化每个交易接口的时区转换器
         if contract.gateway_name not in self.offset_converters:
             self.offset_converters[contract.gateway_name] = OffsetConverter(self)
 
     def process_quote_event(self, event: Event) -> None:
-        """"""
+        """盘口报价"""
         quote: QuoteData = event.data
-        self.quotes[quote.vt_quoteid] = quote
+        self.quotes[quote.vt_quoteid] = quote  # 添加盘口报价信息对象
 
         # If quote is active, then update data in dict.
-        if quote.is_active():
+        if quote.is_active():  # 更新盘口信息对象
             self.active_quotes[quote.vt_quoteid] = quote
-        # Otherwise, pop inactive quote from in dict
+        # Otherwise, pop inactive quote from in dict # 移除过期盘口对象
         elif quote.vt_quoteid in self.active_quotes:
             self.active_quotes.pop(quote.vt_quoteid)
 
     def get_tick(self, vt_symbol: str) -> Optional[TickData]:
         """
-        Get latest market tick data by vt_symbol.
+            Get latest market tick data by vt_symbol.
+            用vt_symbol获取tick对象
         """
         return self.ticks.get(vt_symbol, None)
 
     def get_order(self, vt_orderid: str) -> Optional[OrderData]:
         """
-        Get latest order data by vt_orderid.
+            Get latest order data by vt_orderid.
+            用vt_symbol获取tick对象
         """
         return self.orders.get(vt_orderid, None)
 
     def get_trade(self, vt_tradeid: str) -> Optional[TradeData]:
         """
-        Get trade data by vt_tradeid.
+            Get trade data by vt_tradeid.
+            用vt_symbol获取trades对象
         """
         return self.trades.get(vt_tradeid, None)
 
     def get_position(self, vt_positionid: str) -> Optional[PositionData]:
         """
-        Get latest position data by vt_positionid.
+            Get latest position data by vt_positionid.
+            vt_positionid获取仓位对象
         """
         return self.positions.get(vt_positionid, None)
 
     def get_account(self, vt_accountid: str) -> Optional[AccountData]:
         """
-        Get latest account data by vt_accountid.
+            Get latest account data by vt_accountid.
+            vt_accountid获取账户对象
         """
         return self.accounts.get(vt_accountid, None)
 
     def get_contract(self, vt_symbol: str) -> Optional[ContractData]:
         """
-        Get contract data by vt_symbol.
+            Get contract data by vt_symbol.
+            vt_symbol获取合约对象
         """
         return self.contracts.get(vt_symbol, None)
 
     def get_quote(self, vt_quoteid: str) -> Optional[QuoteData]:
         """
-        Get latest quote data by vt_orderid.
+            Get latest quote data by vt_orderid.
+            vt_orderid获取盘口对象
         """
         return self.quotes.get(vt_quoteid, None)
 
     def get_all_ticks(self) -> List[TickData]:
         """
-        Get all tick data.
+            Get all tick data.
+            获取所有tick
         """
         return list(self.ticks.values())
 
     def get_all_orders(self) -> List[OrderData]:
         """
-        Get all order data.
+            Get all order data.
+            获取所有订单
         """
         return list(self.orders.values())
 
     def get_all_trades(self) -> List[TradeData]:
         """
-        Get all trade data.
+            Get all trade data.
+            获取所有交易
         """
         return list(self.trades.values())
 
     def get_all_positions(self) -> List[PositionData]:
         """
-        Get all position data.
+            Get all position data.
+            获取所有仓位
         """
         return list(self.positions.values())
 
     def get_all_accounts(self) -> List[AccountData]:
         """
-        Get all account data.
+            Get all account data.
+            获取所有账户
         """
         return list(self.accounts.values())
 
     def get_all_contracts(self) -> List[ContractData]:
         """
-        Get all contract data.
+            Get all contract data.
+            获取所有合约
         """
         return list(self.contracts.values())
 
     def get_all_quotes(self) -> List[QuoteData]:
         """
-        Get all quote data.
+            Get all quote data.
+            获取所有盘口信息
         """
         return list(self.quotes.values())
 
     def get_all_active_orders(self, vt_symbol: str = "") -> List[OrderData]:
         """
-        Get all active orders by vt_symbol.
+            Get all active orders by vt_symbol.
 
-        If vt_symbol is empty, return all active orders.
+            If vt_symbol is empty, return all active orders.
+            获取所有活跃订单
         """
-        if not vt_symbol:
+        if not vt_symbol:  # 无指定交易对返回全部
             return list(self.active_orders.values())
-        else:
+        else:  # 返回指定交易对对应的订单对象
             active_orders: List[OrderData] = [
                 order
                 for order in self.active_orders.values()
@@ -606,12 +621,13 @@ class OmsEngine(BaseEngine):
 
     def get_all_active_quotes(self, vt_symbol: str = "") -> List[QuoteData]:
         """
-        Get all active quotes by vt_symbol.
-        If vt_symbol is empty, return all active qutoes.
+            Get all active quotes by vt_symbol.
+            If vt_symbol is empty, return all active qutoes.
+            获取活跃盘口
         """
-        if not vt_symbol:
+        if not vt_symbol:  # 无指定交易对返回全部
             return list(self.active_quotes.values())
-        else:
+        else:  # 返回指定交易对对应的盘口对象
             active_quotes: List[QuoteData] = [
                 quote
                 for quote in self.active_quotes.values()
@@ -621,7 +637,8 @@ class OmsEngine(BaseEngine):
 
     def update_order_request(self, req: OrderRequest, vt_orderid: str, gateway_name: str) -> None:
         """
-        Update order request to offset converter.
+            Update order request to offset converter.
+            向时区转换器发送新订单请求
         """
         converter: OffsetConverter = self.offset_converters.get(gateway_name, None)
         if converter:
@@ -635,10 +652,11 @@ class OmsEngine(BaseEngine):
             net: bool = False
     ) -> List[OrderRequest]:
         """
-        Convert original order request according to given mode.
+            Convert original order request according to given mode.
+            根据给定模式转换原始订单请求
         """
         converter: OffsetConverter = self.offset_converters.get(gateway_name, None)
-        if not converter:
+        if not converter:  # 无转换器直接返回请求
             return [req]
 
         reqs: List[OrderRequest] = converter.convert_order_request(req, lock, net)
@@ -646,15 +664,16 @@ class OmsEngine(BaseEngine):
 
     def get_converter(self, gateway_name: str) -> OffsetConverter:
         """
-        Get offset converter object of specific gateway.
+            Get offset converter object of specific gateway.
+            获取对应交易接口的时区转换器
         """
         return self.offset_converters.get(gateway_name, None)
 
 
 class EmailEngine(BaseEngine):
     """
-    Provides email sending function.
-    发送邮件引擎
+        Provides email sending function.
+        发送邮件引擎
     """
 
     def __init__(self, main_engine: MainEngine, event_engine: EventEngine) -> None:

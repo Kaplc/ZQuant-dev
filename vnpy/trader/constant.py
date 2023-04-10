@@ -8,6 +8,7 @@ from enum import Enum
 class Direction(Enum):
     """
     Direction of order/trade/position.
+    开仓方向
     """
     LONG = "多"
     SHORT = "空"
@@ -17,6 +18,7 @@ class Direction(Enum):
 class Offset(Enum):
     """
     Offset of order/trade.
+    开平仓
     """
     NONE = ""
     OPEN = "开"
@@ -28,6 +30,7 @@ class Offset(Enum):
 class Status(Enum):
     """
     Order status.
+    订单状态
     """
     SUBMITTING = "提交中"
     NOTTRADED = "未成交"
@@ -40,6 +43,7 @@ class Status(Enum):
 class Product(Enum):
     """
     Product class.
+    交易品种类型
     """
     EQUITY = "股票"
     FUTURES = "期货"
@@ -57,6 +61,7 @@ class Product(Enum):
 class OrderType(Enum):
     """
     Order type.
+    挂单类型
     """
     LIMIT = "限价"
     MARKET = "市价"
@@ -77,6 +82,7 @@ class OptionType(Enum):
 class Exchange(Enum):
     """
     Exchange.
+    交易所
     """
     # Chinese
     CFFEX = "CFFEX"         # China Financial Futures Exchange
@@ -134,6 +140,7 @@ class Exchange(Enum):
 class Currency(Enum):
     """
     Currency.
+    货币单位
     """
     USD = "USD"
     HKD = "HKD"
@@ -144,6 +151,7 @@ class Currency(Enum):
 class Interval(Enum):
     """
     Interval of bar data.
+    K线周期
     """
     MINUTE = "1m"
     HOUR = "1h"

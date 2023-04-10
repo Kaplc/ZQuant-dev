@@ -38,7 +38,7 @@ class TickData(BaseData):
         *盘中市场统计数据
     """
 
-    symbol: str  # 交易标的
+    symbol: str  # 品种代码
     exchange: Exchange
     datetime: datetime
 
@@ -84,7 +84,7 @@ class TickData(BaseData):
 
     def __post_init__(self) -> None:
         """"""
-        self.vt_symbol: str = f"{self.symbol}.{self.exchange.value}"
+        self.vt_symbol: str = f"{self.symbol}.{self.exchange.value}"  # 品种代码和交易所名称
 
 
 @dataclass
@@ -116,6 +116,7 @@ class OrderData(BaseData):
     """
     Order data contains information for tracking lastest status
     of a specific order.
+    订单状态信息
     """
 
     symbol: str
@@ -156,8 +157,9 @@ class OrderData(BaseData):
 @dataclass
 class TradeData(BaseData):
     """
-    Trade data contains information of a fill of an order. One order
-    can have several trade fills.
+        Trade data contains information of a fill of an order. One order
+        can have several trade fills.
+        交易信息。一个订单可以有多笔交易
     """
 
     symbol: str
@@ -181,7 +183,8 @@ class TradeData(BaseData):
 @dataclass
 class PositionData(BaseData):
     """
-    Position data is used for tracking each individual position holding.
+        Position data is used for tracking each individual position holding.
+        位置数据用于跟踪仓位
     """
 
     symbol: str
@@ -203,8 +206,9 @@ class PositionData(BaseData):
 @dataclass
 class AccountData(BaseData):
     """
-    Account data contains information about balance, frozen and
-    available.
+        Account data contains information about balance, frozen and
+        available.
+        帐户数据包含有关余额、冻结和可用的信息
     """
 
     accountid: str
@@ -230,8 +234,8 @@ class AccountData(BaseData):
 # 读取和修改属性的方法（getattr、setattr、delattr）：自动生成这些方法，可以方便地读取、修改和删除对象的属性
 class LogData(BaseData):
     """
-    Log data is used for recording log messages on GUI or in log files.
-    日志数据用于在GUI或日志文件中记录日志消息。
+        Log data is used for recording log messages on GUI or in log files.
+        日志数据用于在GUI或日志文件中记录日志消息。
     """
 
     msg: str
@@ -245,7 +249,8 @@ class LogData(BaseData):
 @dataclass
 class ContractData(BaseData):
     """
-    Contract data contains basic information about each contract traded.
+        Contract data contains basic information about each contract traded.
+        合约数据包含每个交易合约的基本信息
     """
 
     symbol: str
@@ -276,9 +281,9 @@ class ContractData(BaseData):
 @dataclass
 class QuoteData(BaseData):
     """
-    Quote data contains information for tracking lastest status
-    of a specific quote.
-    报价数据对象
+        Quote data contains information for tracking lastest status
+        of a specific quote.
+        报价数据对象
     """
 
     symbol: str
@@ -302,13 +307,14 @@ class QuoteData(BaseData):
 
     def is_active(self) -> bool:
         """
-        Check if the quote is active.
+            Check if the quote is active.
+            检查报价是否处于活动状态
         """
         return self.status in ACTIVE_STATUSES
 
     def create_cancel_request(self) -> "CancelRequest":
         """
-        Create cancel request object from quote.
+            Create cancel request object from quote.
         """
         req: CancelRequest = CancelRequest(
             orderid=self.quoteid, symbol=self.symbol, exchange=self.exchange
@@ -319,7 +325,8 @@ class QuoteData(BaseData):
 @dataclass
 class SubscribeRequest:
     """
-    Request sending to specific gateway for subscribing tick data update.
+        Request sending to specific gateway for subscribing tick data update.
+
     """
 
     symbol: str
@@ -333,7 +340,8 @@ class SubscribeRequest:
 @dataclass
 class OrderRequest:
     """
-    Request sending to specific gateway for creating a new order.
+        Request sending to specific gateway for creating a new order.
+        请求发送到特定网关以创建新订单
     """
 
     symbol: str
@@ -351,7 +359,7 @@ class OrderRequest:
 
     def create_order_data(self, orderid: str, gateway_name: str) -> OrderData:
         """
-        Create order data from request.
+            Create order data from request.
         """
         order: OrderData = OrderData(
             symbol=self.symbol,
@@ -371,7 +379,7 @@ class OrderRequest:
 @dataclass
 class CancelRequest:
     """
-    Request sending to specific gateway for canceling an existing order.
+        Request sending to specific gateway for canceling an existing order.
     """
 
     orderid: str
@@ -386,7 +394,7 @@ class CancelRequest:
 @dataclass
 class HistoryRequest:
     """
-    Request sending to specific gateway for querying history data.
+        Request sending to specific gateway for querying history data.
     """
 
     symbol: str
@@ -403,7 +411,7 @@ class HistoryRequest:
 @dataclass
 class QuoteRequest:
     """
-    Request sending to specific gateway for creating a new quote.
+        Request sending to specific gateway for creating a new quote.
     """
 
     symbol: str
@@ -422,7 +430,7 @@ class QuoteRequest:
 
     def create_quote_data(self, quoteid: str, gateway_name: str) -> QuoteData:
         """
-        Create quote data from request.
+            Create quote data from request.
         """
         quote: QuoteData = QuoteData(
             symbol=self.symbol,
