@@ -159,18 +159,18 @@ class TradeData(BaseData):
     """
         Trade data contains information of a fill of an order. One order
         can have several trade fills.
-        交易信息。一个订单可以有多笔交易
+        单笔交易信息，一个订单可以有多笔交易
     """
 
     symbol: str
     exchange: Exchange
     orderid: str
     tradeid: str
-    direction: Direction = None
+    direction: Direction = None  # 方向
 
-    offset: Offset = Offset.NONE
-    price: float = 0
-    volume: float = 0
+    offset: Offset = Offset.NONE  # 开平标志
+    price: float = 0  # 成交价格
+    volume: float = 0  # 成交数额
     datetime: datetime = None
 
     def __post_init__(self) -> None:
@@ -184,12 +184,12 @@ class TradeData(BaseData):
 class PositionData(BaseData):
     """
         Position data is used for tracking each individual position holding.
-        位置数据用于跟踪仓位
+        仓位数据
     """
 
     symbol: str
     exchange: Exchange
-    direction: Direction
+    direction: Direction  # 多空方向
 
     volume: float = 0
     frozen: float = 0
@@ -262,7 +262,7 @@ class ContractData(BaseData):
 
     min_volume: float = 1  # minimum trading volume of the contract
     stop_supported: bool = False  # whether server supports stop order
-    net_position: bool = False  # whether gateway uses net position volume
+    net_position: bool = False  # whether gateway uses net position volume 净头寸：多空头寸差额
     history_data: bool = False  # whether gateway provides bar history data
 
     option_strike: float = 0
@@ -275,7 +275,7 @@ class ContractData(BaseData):
 
     def __post_init__(self) -> None:
         """"""
-        self.vt_symbol: str = f"{self.symbol}.{self.exchange.value}"
+        self.vt_symbol: str = f"{self.symbol}.{self.exchange.value}"  # 合约唯一标识标的物代码和交易所名称组合
 
 
 @dataclass
@@ -341,7 +341,7 @@ class SubscribeRequest:
 class OrderRequest:
     """
         Request sending to specific gateway for creating a new order.
-        请求发送到特定网关以创建新订单
+        向交易接口发送新订单请求
     """
 
     symbol: str

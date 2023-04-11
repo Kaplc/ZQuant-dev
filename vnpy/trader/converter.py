@@ -15,21 +15,21 @@ if TYPE_CHECKING:
 
 
 class OffsetConverter:
-    """"""
+    """开平仓调整"""
 
     def __init__(self, main_engine: "MainEngine") -> None:
         """"""
         self.holdings: Dict[str, "PositionHolding"] = {}
 
-        self.get_contract = main_engine.get_contract
+        self.get_contract = main_engine.get_contrac  # 调用主引擎的订单引擎中的方法获取合约对象
 
     def update_position(self, position: PositionData) -> None:
-        """"""
-        if not self.is_convert_required(position.vt_symbol):
+        """更新持仓"""
+        if not self.is_convert_required(position.vt_symbol):  # 是否可以调整持仓
             return
 
-        holding: PositionHolding = self.get_position_holding(position.vt_symbol)
-        holding.update_position(position)
+        holding: PositionHolding = self.get_position_holding(position.vt_symbol)  # 获取持仓对象
+        holding.update_position(position)  # 更新持仓
 
     def update_trade(self, trade: TradeData) -> None:
         """"""
@@ -56,19 +56,19 @@ class OffsetConverter:
         holding.update_order_request(req, vt_orderid)
 
     def get_position_holding(self, vt_symbol: str) -> "PositionHolding":
-        """"""
+        """获取持仓对象"""
         holding: PositionHolding = self.holdings.get(vt_symbol, None)
-        if not holding:
-            contract: ContractData = self.get_contract(vt_symbol)
-            holding = PositionHolding(contract)
-            self.holdings[vt_symbol] = holding
+        if not holding:  # 没有持仓信息对象
+            contract: ContractData = self.get_contract(vt_symbol)  # 获取合约对象
+            holding = PositionHolding(contract)  # 传入合约对象生成持仓信息对象
+            self.holdings[vt_symbol] = holding  # 添加进持仓对象字典
         return holding
 
     def convert_order_request(
-        self,
-        req: OrderRequest,
-        lock: bool,
-        net: bool = False
+            self,
+            req: OrderRequest,
+            lock: bool,
+            net: bool = False
     ) -> List[OrderRequest]:
         """"""
         if not self.is_convert_required(req.vt_symbol):
@@ -88,51 +88,52 @@ class OffsetConverter:
     def is_convert_required(self, vt_symbol: str) -> bool:
         """
         Check if the contract needs offset convert.
+        检查合约是否可以调整持仓
         """
-        contract: ContractData = self.get_contract(vt_symbol)
+        contract: ContractData = self.get_contract(vt_symbol)  # 获取合约对象
 
         # Only contracts with long-short position mode requires convert
-        if not contract:
+        if not contract:  # 无合约对象返回false
             return False
-        elif contract.net_position:
+        elif contract.net_position:  # 有净头寸返回false
             return False
-        else:
+        else:  # 有合约对象返回true
             return True
 
 
 class PositionHolding:
-    """"""
+    """持仓信息"""
 
     def __init__(self, contract: ContractData) -> None:
-        """"""
-        self.vt_symbol: str = contract.vt_symbol
+        """通过合约对象生成持仓信息对象"""
+        self.vt_symbol: str = contract.vt_symbol  # 合约的唯一标识符
         self.exchange: Exchange = contract.exchange
 
-        self.active_orders: Dict[str, OrderData] = {}
+        self.active_orders: Dict[str, OrderData] = {}  # 活跃的委托单（订单）字典，订单数据对象 OrderData 为值
 
-        self.long_pos: float = 0
-        self.long_yd: float = 0
-        self.long_td: float = 0
+        self.long_pos: float = 0  # 合约上累计的未平多仓合约数量
+        self.long_yd: float = 0  # 该合约多头的昨仓数量 昨日累计的未平多仓合约数量
+        self.long_td: float = 0  # 该合约多头的今仓数量 当日累计的未平多仓合约数量
 
-        self.short_pos: float = 0
-        self.short_yd: float = 0
-        self.short_td: float = 0
+        self.short_pos: float = 0  # 该合约累计空头持仓数量
+        self.short_yd: float = 0  # 空头的昨仓数量
+        self.short_td: float = 0  # 空头的今仓数量
 
-        self.long_pos_frozen: float = 0
-        self.long_yd_frozen: float = 0
-        self.long_td_frozen: float = 0
+        self.long_pos_frozen: float = 0  # 多头持仓的冻结数量，无法交易和调整的仓位
+        self.long_yd_frozen: float = 0  # 多头昨仓的冻结数量
+        self.long_td_frozen: float = 0  # 多头今仓的冻结数量
 
-        self.short_pos_frozen: float = 0
-        self.short_yd_frozen: float = 0
-        self.short_td_frozen: float = 0
+        self.short_pos_frozen: float = 0  # 空头持仓的冻结数量
+        self.short_yd_frozen: float = 0  # 空头昨仓的冻结数量
+        self.short_td_frozen: float = 0  # 空头今仓的冻结数量
 
     def update_position(self, position: PositionData) -> None:
-        """"""
-        if position.direction == Direction.LONG:
-            self.long_pos = position.volume
-            self.long_yd = position.yd_volume
-            self.long_td = self.long_pos - self.long_yd
-        else:
+        """更新持仓信息"""
+        if position.direction == Direction.LONG:  # 做多
+            self.long_pos = position.volume  # 当前仓位
+            self.long_yd = position.yd_volume  # 昨天仓位
+            self.long_td = self.long_pos - self.long_yd  # 今天仓位
+        else:  # 做空
             self.short_pos = position.volume
             self.short_yd = position.yd_volume
             self.short_td = self.short_pos - self.short_yd
@@ -155,30 +156,30 @@ class PositionHolding:
         self.update_order(order)
 
     def update_trade(self, trade: TradeData) -> None:
-        """"""
-        if trade.direction == Direction.LONG:
-            if trade.offset == Offset.OPEN:
-                self.long_td += trade.volume
-            elif trade.offset == Offset.CLOSETODAY:
-                self.short_td -= trade.volume
-            elif trade.offset == Offset.CLOSEYESTERDAY:
-                self.short_yd -= trade.volume
-            elif trade.offset == Offset.CLOSE:
-                if trade.exchange in [Exchange.SHFE, Exchange.INE]:
-                    self.short_yd -= trade.volume
+        """更新单笔交易信息"""
+        if trade.direction == Direction.LONG:  # 更新做多仓位信息
+            if trade.offset == Offset.OPEN:  # 开仓标志
+                self.long_td += trade.volume  # 成交数额累加进多头的今仓数量
+            elif trade.offset == Offset.CLOSETODAY:  # 平今标志
+                self.short_td -= trade.volume  # 累减空头今天仓位数量
+            elif trade.offset == Offset.CLOSEYESTERDAY:  # 平昨标志
+                self.short_yd -= trade.volume  # 累减空头昨天仓位数量
+            elif trade.offset == Offset.CLOSE:  # 平仓标志
+                if trade.exchange in [Exchange.SHFE, Exchange.INE]:  # 判断不同交易所额外情况
+                    self.short_yd -= trade.volume  # 昨空
                 else:
-                    self.short_td -= trade.volume
+                    self.short_td -= trade.volume  # 今空
 
-                    if self.short_td < 0:
+                    if self.short_td < 0:  # 今空
                         self.short_yd += self.short_td
-                        self.short_td = 0
-        else:
+                        self.short_td = 0  # 归零今空
+        else:  # 做空
             if trade.offset == Offset.OPEN:
-                self.short_td += trade.volume
+                self.short_td += trade.volume  # 今空
             elif trade.offset == Offset.CLOSETODAY:
-                self.long_td -= trade.volume
+                self.long_td -= trade.volume  # 今多
             elif trade.offset == Offset.CLOSEYESTERDAY:
-                self.long_yd -= trade.volume
+                self.long_yd -= trade.volume  # 昨多
             elif trade.offset == Offset.CLOSE:
                 if trade.exchange in [Exchange.SHFE, Exchange.INE]:
                     self.long_yd -= trade.volume
@@ -189,14 +190,14 @@ class PositionHolding:
                         self.long_yd += self.long_td
                         self.long_td = 0
 
-        self.long_pos = self.long_td + self.long_yd
-        self.short_pos = self.short_td + self.short_yd
+        self.long_pos = self.long_td + self.long_yd  # 当前多仓总和
+        self.short_pos = self.short_td + self.short_yd  # 当前空仓总和
 
-        # Update frozen volume to ensure no more than total volume
+        # Update frozen volume to ensure no more than total volume # 更新冻结仓位
         self.sum_pos_frozen()
 
     def calculate_frozen(self) -> None:
-        """"""
+        """计算冻结仓位"""
         self.long_pos_frozen = 0
         self.long_yd_frozen = 0
         self.long_td_frozen = 0
@@ -207,12 +208,12 @@ class PositionHolding:
 
         for order in self.active_orders.values():
             # Ignore position open orders
-            if order.offset == Offset.OPEN:
+            if order.offset == Offset.OPEN:  # 忽视开仓订单
                 continue
 
-            frozen: float = order.volume - order.traded
+            frozen: float = order.volume - order.traded  # 未成交额
 
-            if order.direction == Direction.LONG:
+            if order.direction == Direction.LONG:  # 做多冻结仓位
                 if order.offset == Offset.CLOSETODAY:
                     self.short_td_frozen += frozen
                 elif order.offset == Offset.CLOSEYESTERDAY:
@@ -224,7 +225,7 @@ class PositionHolding:
                         self.short_yd_frozen += (self.short_td_frozen
                                                  - self.short_td)
                         self.short_td_frozen = self.short_td
-            elif order.direction == Direction.SHORT:
+            elif order.direction == Direction.SHORT:  # 做空冻结仓位
                 if order.offset == Offset.CLOSETODAY:
                     self.long_td_frozen += frozen
                 elif order.offset == Offset.CLOSEYESTERDAY:
@@ -237,10 +238,10 @@ class PositionHolding:
                                                 - self.long_td)
                         self.long_td_frozen = self.long_td
 
-        self.sum_pos_frozen()
+        self.sum_pos_frozen()  # 计算总和
 
     def sum_pos_frozen(self) -> None:
-        """"""
+        """计算冻结仓位总和"""
         # Frozen volume should be no more than total volume
         self.long_td_frozen = min(self.long_td_frozen, self.long_td)
         self.long_yd_frozen = min(self.long_yd_frozen, self.long_yd)
@@ -252,10 +253,11 @@ class PositionHolding:
         self.short_pos_frozen = self.short_td_frozen + self.short_yd_frozen
 
     def convert_order_request_shfe(self, req: OrderRequest) -> List[OrderRequest]:
-        """"""
-        if req.offset == Offset.OPEN:
+        """处理订单请求"""
+        if req.offset == Offset.OPEN:  # 忽略开仓订单
             return [req]
 
+        # 获取可更改仓位
         if req.direction == Direction.LONG:
             pos_available: int = self.short_pos - self.short_pos_frozen
             td_available: int = self.short_td - self.short_td_frozen
@@ -263,6 +265,7 @@ class PositionHolding:
             pos_available: int = self.long_pos - self.long_pos_frozen
             td_available: int = self.long_td - self.long_td_frozen
 
+        # 根据请求数额执行仓位调整
         if req.volume > pos_available:
             return []
         elif req.volume <= td_available:
