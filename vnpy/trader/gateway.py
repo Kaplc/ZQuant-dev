@@ -41,26 +41,26 @@ class BaseGateway(ABC):
 
     ---
     ## Basics
-    A gateway should satisfies:
+    A gateway should satisfies: 应满足
     * this class should be thread-safe:
-        * all methods should be thread-safe
-        * no mutable shared properties between objects.
-    * all methods should be non-blocked
-    * satisfies all requirements written in docstring for every method and callbacks.
-    * automatically reconnect if connection lost.
+        * all methods should be thread-safe 线程安全
+        * no mutable shared properties between objects. 不共享资源
+    * all methods should be non-blocked 非阻塞方法
+    * satisfies all requirements written in docstring for every method and callbacks. 任何回调都有处理函数
+    * automatically reconnect if connection lost. 链接丢失自动重连
 
     ---
     ## methods must implements:
     all @abstractmethod
 
     ---
-    ## callbacks must response manually:
-    * on_tick
-    * on_trade
-    * on_order
-    * on_position
-    * on_account
-    * on_contract
+    ## callbacks must response manually: 回调必须手动响应
+    * on_tick 报价
+    * on_trade 交易
+    * on_order 订单
+    * on_position 仓位
+    * on_account 账户
+    * on_contract 合约
 
     All the XxxData passed to callback should be constant, which means that
         the object should not be modified after passing to on_xxxx.
@@ -74,10 +74,10 @@ class BaseGateway(ABC):
     # Default name for the gateway. 交易接口默认名字
     default_name: str = ""
 
-    # Fields required in setting dict for connect function.
+    # Fields required in setting dict for connect function. 默认配置
     default_setting: Dict[str, Any] = {}
 
-    # Exchanges supported in the gateway.
+    # Exchanges supported in the gateway. 交易接口所支持的交易所列表
     exchanges: List[Exchange] = []
 
     def __init__(self, event_engine: EventEngine, gateway_name: str) -> None:

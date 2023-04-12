@@ -10,6 +10,7 @@ from .setting import SETTINGS
 class BaseDatafeed(ABC):
     """
     Abstract datafeed class for connecting to different datafeed.
+    回测数据库抽象类
     """
 
     def init(self, output: Callable = print) -> bool:
@@ -35,7 +36,7 @@ datafeed: BaseDatafeed = None
 
 
 def get_datafeed() -> BaseDatafeed:
-    """"""
+    """获取回测使用的数据库"""
     # Return datafeed object if already inited
     global datafeed
     if datafeed:

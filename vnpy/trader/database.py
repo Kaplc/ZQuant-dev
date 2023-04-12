@@ -10,7 +10,6 @@ from .object import BarData, TickData
 from .setting import SETTINGS
 from .utility import ZoneInfo
 
-
 DB_TZ = ZoneInfo(SETTINGS["database.timezone"])
 
 
@@ -76,12 +75,12 @@ class BaseDatabase(ABC):
 
     @abstractmethod
     def load_bar_data(
-        self,
-        symbol: str,
-        exchange: Exchange,
-        interval: Interval,
-        start: datetime,
-        end: datetime
+            self,
+            symbol: str,
+            exchange: Exchange,
+            interval: Interval,
+            start: datetime,
+            end: datetime
     ) -> List[BarData]:
         """
         Load bar data from database.
@@ -91,11 +90,11 @@ class BaseDatabase(ABC):
 
     @abstractmethod
     def load_tick_data(
-        self,
-        symbol: str,
-        exchange: Exchange,
-        start: datetime,
-        end: datetime
+            self,
+            symbol: str,
+            exchange: Exchange,
+            start: datetime,
+            end: datetime
     ) -> List[TickData]:
         """
         Load tick data from database.
@@ -105,10 +104,10 @@ class BaseDatabase(ABC):
 
     @abstractmethod
     def delete_bar_data(
-        self,
-        symbol: str,
-        exchange: Exchange,
-        interval: Interval
+            self,
+            symbol: str,
+            exchange: Exchange,
+            interval: Interval
     ) -> int:
         """
         Delete all bar data with given symbol + exchange + interval.
@@ -118,9 +117,9 @@ class BaseDatabase(ABC):
 
     @abstractmethod
     def delete_tick_data(
-        self,
-        symbol: str,
-        exchange: Exchange
+            self,
+            symbol: str,
+            exchange: Exchange
     ) -> int:
         """
         Delete all tick data with given symbol + exchange.
@@ -142,6 +141,7 @@ class BaseDatabase(ABC):
         Return tick data avaible in database.
         """
         pass
+
 
 # 初始化database
 database: BaseDatabase = None
