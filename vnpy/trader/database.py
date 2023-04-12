@@ -17,6 +17,7 @@ DB_TZ = ZoneInfo(SETTINGS["database.timezone"])
 def convert_tz(dt: datetime) -> datetime:
     """
     Convert timezone of datetime object to DB_TZ.
+    转换时区
     """
     dt: datetime = dt.astimezone(DB_TZ)
     return dt.replace(tzinfo=None)
@@ -26,6 +27,7 @@ def convert_tz(dt: datetime) -> datetime:
 class BarOverview:
     """
     Overview of bar data stored in database.
+    K线数据总览对象
     """
 
     symbol: str = ""
@@ -40,6 +42,7 @@ class BarOverview:
 class TickOverview:
     """
     Overview of tick data stored in database.
+    Tick数据总览对象
     """
 
     symbol: str = ""
