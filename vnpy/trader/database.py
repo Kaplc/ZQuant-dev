@@ -55,12 +55,14 @@ class TickOverview:
 class BaseDatabase(ABC):
     """
     Abstract database class for connecting to different database.
+    基础数据库对象
     """
 
     @abstractmethod
     def save_bar_data(self, bars: List[BarData], stream: bool = False) -> bool:
         """
         Save bar data into database.
+        保存K线到数据库
         """
         pass
 
@@ -68,6 +70,7 @@ class BaseDatabase(ABC):
     def save_tick_data(self, ticks: List[TickData], stream: bool = False) -> bool:
         """
         Save tick data into database.
+        保存tick
         """
         pass
 
@@ -82,6 +85,7 @@ class BaseDatabase(ABC):
     ) -> List[BarData]:
         """
         Load bar data from database.
+        加载K线
         """
         pass
 
@@ -95,6 +99,7 @@ class BaseDatabase(ABC):
     ) -> List[TickData]:
         """
         Load tick data from database.
+        加载tick
         """
         pass
 
@@ -107,6 +112,7 @@ class BaseDatabase(ABC):
     ) -> int:
         """
         Delete all bar data with given symbol + exchange + interval.
+        删除K线
         """
         pass
 
@@ -118,6 +124,7 @@ class BaseDatabase(ABC):
     ) -> int:
         """
         Delete all tick data with given symbol + exchange.
+        删除tick
         """
         pass
 
@@ -125,6 +132,7 @@ class BaseDatabase(ABC):
     def get_bar_overview(self) -> List[BarOverview]:
         """
         Return bar data avaible in database.
+        
         """
         pass
 
@@ -135,28 +143,28 @@ class BaseDatabase(ABC):
         """
         pass
 
-
+# 初始化database
 database: BaseDatabase = None
 
 
 def get_database() -> BaseDatabase:
-    """"""
+    """获取数据库对象"""
     # Return database object if already inited
     global database
     if database:
         return database
 
-    # Read database related global setting
+    # Read database related global setting 从配置文件读取数据库配置
     database_name: str = SETTINGS["database.name"]
     module_name: str = f"vnpy_{database_name}"
 
-    # Try to import database module
+    # Try to import database module 导入数据库模块
     try:
         module: ModuleType = import_module(module_name)
     except ModuleNotFoundError:
         print(f"找不到数据库驱动{module_name}，使用默认的SQLite数据库")
         module: ModuleType = import_module("vnpy_sqlite")
 
-    # Create database object from module
+    # Create database object from module 创建数据库对象并返回
     database = module.Database()
     return database
