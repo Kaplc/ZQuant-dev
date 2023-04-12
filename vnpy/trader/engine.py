@@ -638,7 +638,7 @@ class OmsEngine(BaseEngine):
     def update_order_request(self, req: OrderRequest, vt_orderid: str, gateway_name: str) -> None:
         """
             Update order request to offset converter.
-            向时区转换器发送新订单请求
+            更新订单信息的通过转换器
         """
         converter: OffsetConverter = self.offset_converters.get(gateway_name, None)
         if converter:
@@ -653,7 +653,7 @@ class OmsEngine(BaseEngine):
     ) -> List[OrderRequest]:
         """
             Convert original order request according to given mode.
-            根据给定模式转换原始订单请求
+            通过转换器转换原始订单请求为框架可处理的请求
         """
         converter: OffsetConverter = self.offset_converters.get(gateway_name, None)
         if not converter:  # 无转换器直接返回请求
@@ -665,7 +665,7 @@ class OmsEngine(BaseEngine):
     def get_converter(self, gateway_name: str) -> OffsetConverter:
         """
             Get offset converter object of specific gateway.
-            获取对应交易接口的时区转换器
+            获取对应交易接口的订单请求转换器
         """
         return self.offset_converters.get(gateway_name, None)
 

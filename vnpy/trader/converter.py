@@ -32,7 +32,7 @@ class OffsetConverter:
         holding.update_position(position)  # 更新持仓
 
     def update_trade(self, trade: TradeData) -> None:
-        """"""
+        """更新交易数据到"""
         if not self.is_convert_required(trade.vt_symbol):
             return
 
@@ -40,7 +40,7 @@ class OffsetConverter:
         holding.update_trade(trade)
 
     def update_order(self, order: OrderData) -> None:
-        """"""
+        """更新订单信息"""
         if not self.is_convert_required(order.vt_symbol):
             return
 
@@ -48,7 +48,7 @@ class OffsetConverter:
         holding.update_order(order)
 
     def update_order_request(self, req: OrderRequest, vt_orderid: str) -> None:
-        """"""
+        """更新订单请求"""
         if not self.is_convert_required(req.vt_symbol):
             return
 
@@ -70,7 +70,7 @@ class OffsetConverter:
             lock: bool,
             net: bool = False
     ) -> List[OrderRequest]:
-        """"""
+        """转换订单请求成框架可识别的请求"""
         if not self.is_convert_required(req.vt_symbol):
             return [req]
 
@@ -128,7 +128,7 @@ class PositionHolding:
         self.short_td_frozen: float = 0  # 空头今仓的冻结数量
 
     def update_position(self, position: PositionData) -> None:
-        """更新持仓信息"""
+        """更新持仓，昨仓，今仓"""
         if position.direction == Direction.LONG:  # 做多
             self.long_pos = position.volume  # 当前仓位
             self.long_yd = position.yd_volume  # 昨天仓位
@@ -139,7 +139,7 @@ class PositionHolding:
             self.short_td = self.short_pos - self.short_yd
 
     def update_order(self, order: OrderData) -> None:
-        """"""
+        """更新活跃订单，删除过期订单"""
         if order.is_active():
             self.active_orders[order.vt_orderid] = order
         else:
@@ -149,11 +149,11 @@ class PositionHolding:
         self.calculate_frozen()
 
     def update_order_request(self, req: OrderRequest, vt_orderid: str) -> None:
-        """"""
+        """处理更新订单请求"""
         gateway_name, orderid = vt_orderid.split(".")
 
         order: OrderData = req.create_order_data(orderid, gateway_name)
-        self.update_order(order)
+        self.update_order(order)  # 更新活跃订单，删除过期订单
 
     def update_trade(self, trade: TradeData) -> None:
         """更新单笔交易信息"""
@@ -241,7 +241,7 @@ class PositionHolding:
         self.sum_pos_frozen()  # 计算总和
 
     def sum_pos_frozen(self) -> None:
-        """计算冻结仓位总和"""
+        """验证并求总冻结仓位"""
         # Frozen volume should be no more than total volume
         self.long_td_frozen = min(self.long_td_frozen, self.long_td)
         self.long_yd_frozen = min(self.long_yd_frozen, self.long_yd)
@@ -253,7 +253,7 @@ class PositionHolding:
         self.short_pos_frozen = self.short_td_frozen + self.short_yd_frozen
 
     def convert_order_request_shfe(self, req: OrderRequest) -> List[OrderRequest]:
-        """处理订单请求"""
+        """额外情况：转换SHFE订单请求"""
         if req.offset == Offset.OPEN:  # 忽略开仓订单
             return [req]
 
@@ -289,7 +289,7 @@ class PositionHolding:
             return req_list
 
     def convert_order_request_lock(self, req: OrderRequest) -> List[OrderRequest]:
-        """"""
+        """转换锁仓订单请求"""
         if req.direction == Direction.LONG:
             td_volume: int = self.short_td
             yd_available: int = self.short_yd - self.short_yd_frozen
@@ -329,7 +329,7 @@ class PositionHolding:
             return req_list
 
     def convert_order_request_net(self, req: OrderRequest) -> List[OrderRequest]:
-        """"""
+        """转换订单请求"""
         if req.direction == Direction.LONG:
             pos_available: int = self.short_pos - self.short_pos_frozen
             td_available: int = self.short_td - self.short_td_frozen
