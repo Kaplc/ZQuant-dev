@@ -297,38 +297,39 @@ class BaseGateway(ABC):
 class LocalOrderManager:
     """
         Management tool to support use local order id for trading.
-
+        本地订单管理
     """
 
     def __init__(self, gateway: BaseGateway, order_prefix: str = "") -> None:
         """"""
         self.gateway: BaseGateway = gateway
 
-        # For generating local orderid
-        self.order_prefix: str = order_prefix
-        self.order_count: int = 0
-        self.orders: Dict[str, OrderData] = {}  # local_orderid: order
+        # For generating local orderid 生成本地订单id
+        self.order_prefix: str = order_prefix  # 订单前缀
+        self.order_count: int = 0  # 订单数额
+        self.orders: Dict[str, OrderData] = {}  # local_orderid: order 订单对象
 
-        # Map between local and system orderid
-        self.local_sys_orderid_map: Dict[str, str] = {}
-        self.sys_local_orderid_map: Dict[str, str] = {}
+        # Map between local and system orderid 本地订单和服务器订单的映射
+        self.local_sys_orderid_map: Dict[str, str] = {}  # 本地订单映射表
+        self.sys_local_orderid_map: Dict[str, str] = {}  # 服务器订单映射表
 
-        # Push order data buf
+        # Push order data buf 推送数据缓冲器
         self.push_data_buf: Dict[str, Dict] = {}  # sys_orderid: data
 
-        # Callback for processing push order data
+        # Callback for processing push order data 推送订单回调数据处理函数
         self.push_data_callback: Callable = None
 
-        # Cancel request buf
+        # Cancel request buf 取消请求缓冲器
         self.cancel_request_buf: Dict[str, CancelRequest] = {}  # local_orderid: req
 
-        # Hook cancel order function
+        # Hook cancel order function 定义gateway直接调用cancel_order
         self._cancel_order: Callable = gateway.cancel_order
         gateway.cancel_order = self.cancel_order
 
     def new_local_orderid(self) -> str:
         """
         Generate a new local orderid.
+        生成新的本地订单ID
         """
         self.order_count += 1
         local_orderid: str = self.order_prefix + str(self.order_count).rjust(8, "0")
@@ -337,10 +338,12 @@ class LocalOrderManager:
     def get_local_orderid(self, sys_orderid: str) -> str:
         """
         Get local orderid with sys orderid.
+        服务器订单id->本地订单id
         """
+        # 如果查找字典未找到订单赋值""
         local_orderid: str = self.sys_local_orderid_map.get(sys_orderid, "")
 
-        if not local_orderid:
+        if not local_orderid:  # 没有就创建并更新到两个映射表
             local_orderid = self.new_local_orderid()
             self.update_orderid_map(local_orderid, sys_orderid)
 
@@ -349,6 +352,7 @@ class LocalOrderManager:
     def get_sys_orderid(self, local_orderid: str) -> str:
         """
         Get sys orderid with local orderid.
+        本地订单id->服务器订单id
         """
         sys_orderid: str = self.local_sys_orderid_map.get(local_orderid, "")
         return sys_orderid
@@ -356,63 +360,70 @@ class LocalOrderManager:
     def update_orderid_map(self, local_orderid: str, sys_orderid: str) -> None:
         """
         Update orderid map.
+        更新订单ID映射
         """
+
         self.sys_local_orderid_map[sys_orderid] = local_orderid
         self.local_sys_orderid_map[local_orderid] = sys_orderid
 
         self.check_cancel_request(local_orderid)
-        self.check_push_data(sys_orderid)
+        self.check_push_data(sys_orderid)  # 检查订单是否在缓冲器
 
     def check_push_data(self, sys_orderid: str) -> None:
         """
         Check if any order push data waiting.
+        检查是否有服务器订单在缓冲器等待
         """
+        # 服务器订单不在推送缓冲器
         if sys_orderid not in self.push_data_buf:
             return
 
+        # 推送缓冲器删除服务器订单
         data: dict = self.push_data_buf.pop(sys_orderid)
-        if self.push_data_callback:
+        if self.push_data_callback:  # 调用回调函数处理删除的订单
             self.push_data_callback(data)
 
     def add_push_data(self, sys_orderid: str, data: dict) -> None:
         """
-        Add push data into buf.
+        Add push data into buf
+        添加服务器订单进缓冲器
         """
         self.push_data_buf[sys_orderid] = data
 
     def get_order_with_sys_orderid(self, sys_orderid: str) -> Optional[OrderData]:
-        """"""
+        """服务器订单id->本地订单id->订单对象"""
         local_orderid: str = self.sys_local_orderid_map.get(sys_orderid, None)
-        if not local_orderid:
+        if not local_orderid:  # 找不到本地订单返回None
             return None
         else:
-            return self.get_order_with_local_orderid(local_orderid)
+            return self.get_order_with_local_orderid(local_orderid)  # 返回订单对象
 
     def get_order_with_local_orderid(self, local_orderid: str) -> OrderData:
-        """"""
+        """本地订单id->order对象"""
         order: OrderData = self.orders[local_orderid]
-        return copy(order)
+        return copy(order)  # 复制订单对象返回
 
     def on_order(self, order: OrderData) -> None:
         """
         Keep an order buf before pushing it to gateway.
+        推送到接口前保存
         """
-        self.orders[order.orderid] = copy(order)
-        self.gateway.on_order(order)
+        self.orders[order.orderid] = copy(order)  # 保存
+        self.gateway.on_order(order)  # 推送
 
     def cancel_order(self, req: CancelRequest) -> None:
-        """"""
+        """调用接口取消订单"""
         sys_orderid: str = self.get_sys_orderid(req.orderid)
-        if not sys_orderid:
+        if not sys_orderid:  # 无法找到订单请求->添加进取消请求缓冲器
             self.cancel_request_buf[req.orderid] = req
             return
 
-        self._cancel_order(req)
+        self._cancel_order(req)  # 调用接口取消订单
 
     def check_cancel_request(self, local_orderid: str) -> None:
-        """"""
+        """取消缓冲器更新订单"""
         if local_orderid not in self.cancel_request_buf:
             return
 
-        req: CancelRequest = self.cancel_request_buf.pop(local_orderid)
-        self.gateway.cancel_order(req)
+        req: CancelRequest = self.cancel_request_buf.pop(local_orderid)  # 缓冲器内删除订单
+        self.gateway.cancel_order(req)  # 调用接口取消订单

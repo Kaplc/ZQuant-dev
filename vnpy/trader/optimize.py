@@ -9,11 +9,9 @@ from _collections_abc import dict_keys, dict_values, Iterable
 from tqdm import tqdm
 from deap import creator, base, tools, algorithms
 
-
 OUTPUT_FUNC = Callable[[str], None]
 EVALUATE_FUNC = Callable[[dict], dict]
 KEY_FUNC = Callable[[list], float]
-
 
 # Create individual class used in genetic algorithm optimization
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
@@ -31,11 +29,11 @@ class OptimizationSetting:
         self.target_name: str = ""
 
     def add_parameter(
-        self,
-        name: str,
-        start: float,
-        end: float = None,
-        step: float = None
+            self,
+            name: str,
+            start: float,
+            end: float = None,
+            step: float = None
     ) -> Tuple[bool, str]:
         """"""
         if end is None and step is None:
@@ -78,8 +76,8 @@ class OptimizationSetting:
 
 
 def check_optimization_setting(
-    optimization_setting: OptimizationSetting,
-    output: OUTPUT_FUNC = print
+        optimization_setting: OptimizationSetting,
+        output: OUTPUT_FUNC = print
 ) -> bool:
     """"""
     if not optimization_setting.generate_settings():
@@ -94,11 +92,11 @@ def check_optimization_setting(
 
 
 def run_bf_optimization(
-    evaluate_func: EVALUATE_FUNC,
-    optimization_setting: OptimizationSetting,
-    key_func: KEY_FUNC,
-    max_workers: int = None,
-    output: OUTPUT_FUNC = print
+        evaluate_func: EVALUATE_FUNC,
+        optimization_setting: OptimizationSetting,
+        key_func: KEY_FUNC,
+        max_workers: int = None,
+        output: OUTPUT_FUNC = print
 ) -> List[Tuple]:
     """Run brutal force optimization"""
     settings: List[Dict] = optimization_setting.generate_settings()
@@ -109,8 +107,8 @@ def run_bf_optimization(
     start: int = perf_counter()
 
     with ProcessPoolExecutor(
-        max_workers,
-        mp_context=get_context("spawn")
+            max_workers,
+            mp_context=get_context("spawn")
     ) as executor:
         it: Iterable = tqdm(
             executor.map(evaluate_func, settings),
@@ -127,13 +125,13 @@ def run_bf_optimization(
 
 
 def run_ga_optimization(
-    evaluate_func: EVALUATE_FUNC,
-    optimization_setting: OptimizationSetting,
-    key_func: KEY_FUNC,
-    max_workers: int = None,
-    population_size: int = 100,
-    ngen_size: int = 30,
-    output: OUTPUT_FUNC = print
+        evaluate_func: EVALUATE_FUNC,
+        optimization_setting: OptimizationSetting,
+        key_func: KEY_FUNC,
+        max_workers: int = None,
+        population_size: int = 100,
+        ngen_size: int = 30,
+        output: OUTPUT_FUNC = print
 ) -> List[Tuple]:
     """Run genetic algorithm optimization"""
     # Define functions for generate parameter randomly
@@ -175,13 +173,13 @@ def run_ga_optimization(
         )
 
         total_size: int = len(settings)
-        pop_size: int = population_size                      # number of individuals in each generation
-        lambda_: int = pop_size                              # number of children to produce at each generation
-        mu: int = int(pop_size * 0.8)                        # number of individuals to select for the next generation
+        pop_size: int = population_size  # number of individuals in each generation
+        lambda_: int = pop_size  # number of children to produce at each generation
+        mu: int = int(pop_size * 0.8)  # number of individuals to select for the next generation
 
-        cxpb: float = 0.95         # probability that an offspring is produced by crossover
-        mutpb: float = 1 - cxpb    # probability that an offspring is produced by mutation
-        ngen: int = ngen_size    # number of generation
+        cxpb: float = 0.95  # probability that an offspring is produced by crossover
+        mutpb: float = 1 - cxpb  # probability that an offspring is produced by mutation
+        ngen: int = ngen_size  # number of generation
 
         pop: list = toolbox.population(pop_size)
 
@@ -218,10 +216,10 @@ def run_ga_optimization(
 
 
 def ga_evaluate(
-    cache: dict,
-    evaluate_func: callable,
-    key_func: callable,
-    parameters: list
+        cache: dict,
+        evaluate_func: callable,
+        key_func: callable,
+        parameters: list
 ) -> float:
     """
     Functions to be run in genetic algorithm optimization.
@@ -235,4 +233,4 @@ def ga_evaluate(
         cache[tp] = result
 
     value: float = key_func(result)
-    return (value, )
+    return (value,)
