@@ -81,21 +81,24 @@ class BaseGateway(ABC):
     exchanges: List[Exchange] = []
 
     def __init__(self, event_engine: EventEngine, gateway_name: str) -> None:
-        """"""
+        """定义事件引擎，交易接口名称"""
         self.event_engine: EventEngine = event_engine
         self.gateway_name: str = gateway_name
 
     def on_event(self, type: str, data: Any = None) -> None:
         """
         General event push.
+        添加事件处理
         """
-        event: Event = Event(type, data)
-        self.event_engine.put(event)
+        event: Event = Event(type, data)  # 创建事件对象
+        self.event_engine.put(event)  # 推送处理队列
 
     def on_tick(self, tick: TickData) -> None:
         """
         Tick event push.
         Tick event of a specific vt_symbol is also pushed.
+        创建tick事件并推送
+        创建（tick+tick唯一标识）事件并推送
         """
         self.on_event(EVENT_TICK, tick)
         self.on_event(EVENT_TICK + tick.vt_symbol, tick)
@@ -104,6 +107,7 @@ class BaseGateway(ABC):
         """
         Trade event push.
         Trade event of a specific vt_symbol is also pushed.
+        创建推送trade事件对象
         """
         self.on_event(EVENT_TRADE, trade)
         self.on_event(EVENT_TRADE + trade.vt_symbol, trade)
@@ -112,6 +116,7 @@ class BaseGateway(ABC):
         """
         Order event push.
         Order event of a specific vt_orderid is also pushed.
+        创建推送order事件对象
         """
         self.on_event(EVENT_ORDER, order)
         self.on_event(EVENT_ORDER + order.vt_orderid, order)
@@ -120,6 +125,7 @@ class BaseGateway(ABC):
         """
         Position event push.
         Position event of a specific vt_symbol is also pushed.
+        创建推送position事件对象
         """
         self.on_event(EVENT_POSITION, position)
         self.on_event(EVENT_POSITION + position.vt_symbol, position)
@@ -128,6 +134,7 @@ class BaseGateway(ABC):
         """
         Account event push.
         Account event of a specific vt_accountid is also pushed.
+        推送account事件对象
         """
         self.on_event(EVENT_ACCOUNT, account)
         self.on_event(EVENT_ACCOUNT + account.vt_accountid, account)
@@ -136,6 +143,7 @@ class BaseGateway(ABC):
         """
         Quote event push.
         Quote event of a specific vt_symbol is also pushed.
+        推送盘口数据事件对象
         """
         self.on_event(EVENT_QUOTE, quote)
         self.on_event(EVENT_QUOTE + quote.vt_symbol, quote)
@@ -143,18 +151,21 @@ class BaseGateway(ABC):
     def on_log(self, log: LogData) -> None:
         """
         Log event push.
+        推送log事件对象
         """
         self.on_event(EVENT_LOG, log)
 
     def on_contract(self, contract: ContractData) -> None:
         """
         Contract event push.
+        推送合约事件对象
         """
         self.on_event(EVENT_CONTRACT, contract)
 
     def write_log(self, msg: str) -> None:
         """
         Write a log event from gateway.
+        写入log并推送
         """
         log: LogData = LogData(msg=msg, gateway_name=self.gateway_name)
         self.on_log(log)
@@ -162,7 +173,7 @@ class BaseGateway(ABC):
     @abstractmethod
     def connect(self, setting: dict) -> None:
         """
-        Start gateway connection.
+        Start gateway connection. 启动交易接口连接
 
         to implement this method, you must:
         * connect to server if necessary
@@ -185,6 +196,7 @@ class BaseGateway(ABC):
     def close(self) -> None:
         """
         Close gateway connection.
+        关闭接口链接
         """
         pass
 
@@ -192,6 +204,7 @@ class BaseGateway(ABC):
     def subscribe(self, req: SubscribeRequest) -> None:
         """
         Subscribe tick data update.
+        订阅tick数据
         """
         pass
 
@@ -199,7 +212,7 @@ class BaseGateway(ABC):
     def send_order(self, req: OrderRequest) -> str:
         """
         Send a new order to server.
-
+        向服务器发送订单
         implementation should finish the tasks blow:
         * create an OrderData from req using OrderRequest.create_order_data
         * assign a unique(gateway instance scope) id to OrderData.orderid
@@ -219,6 +232,7 @@ class BaseGateway(ABC):
         Cancel an existing order.
         implementation should finish the tasks blow:
         * send request to server
+        取消订单
         """
         pass
 
@@ -236,6 +250,7 @@ class BaseGateway(ABC):
         * return vt_quoteid
 
         :return str vt_quoteid for created QuoteData
+        发送报价
         """
         return ""
 
@@ -244,6 +259,7 @@ class BaseGateway(ABC):
         Cancel an existing quote.
         implementation should finish the tasks blow:
         * send request to server
+        取消报价
         """
         pass
 
@@ -251,6 +267,7 @@ class BaseGateway(ABC):
     def query_account(self) -> None:
         """
         Query account balance.
+        查询账户
         """
         pass
 
@@ -258,25 +275,29 @@ class BaseGateway(ABC):
     def query_position(self) -> None:
         """
         Query holding positions.
+        查询持仓
         """
         pass
 
     def query_history(self, req: HistoryRequest) -> List[BarData]:
         """
         Query bar history data.
+        查询K线历史事件
         """
         pass
 
     def get_default_setting(self) -> Dict[str, Any]:
         """
         Return default setting dict.
+        获取接口配置
         """
         return self.default_setting
 
 
 class LocalOrderManager:
     """
-    Management tool to support use local order id for trading.
+        Management tool to support use local order id for trading.
+
     """
 
     def __init__(self, gateway: BaseGateway, order_prefix: str = "") -> None:
@@ -286,7 +307,7 @@ class LocalOrderManager:
         # For generating local orderid
         self.order_prefix: str = order_prefix
         self.order_count: int = 0
-        self.orders: Dict[str, OrderData] = {}        # local_orderid: order
+        self.orders: Dict[str, OrderData] = {}  # local_orderid: order
 
         # Map between local and system orderid
         self.local_sys_orderid_map: Dict[str, str] = {}
@@ -299,7 +320,7 @@ class LocalOrderManager:
         self.push_data_callback: Callable = None
 
         # Cancel request buf
-        self.cancel_request_buf: Dict[str, CancelRequest] = {}    # local_orderid: req
+        self.cancel_request_buf: Dict[str, CancelRequest] = {}  # local_orderid: req
 
         # Hook cancel order function
         self._cancel_order: Callable = gateway.cancel_order
