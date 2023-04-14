@@ -13,7 +13,7 @@ OUTPUT_FUNC = Callable[[str], None]
 EVALUATE_FUNC = Callable[[dict], dict]
 KEY_FUNC = Callable[[list], float]
 
-# Create individual class used in genetic algorithm optimization
+# Create individual class used in genetic algorithm optimization 遗传算法配置
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMax)
 
@@ -21,21 +21,22 @@ creator.create("Individual", list, fitness=creator.FitnessMax)
 class OptimizationSetting:
     """
     Setting for runnning optimization.
+    设置遗传算法参数
     """
 
     def __init__(self) -> None:
-        """"""
-        self.params: Dict[str, List] = {}
-        self.target_name: str = ""
+        """初始化参数和目标值"""
+        self.params: Dict[str, List] = {}  # 存储参数的名称和取值范围(包括起始点、终止点和步进)
+        self.target_name: str = ""  # 目标值的名称
 
     def add_parameter(
             self,
-            name: str,
-            start: float,
-            end: float = None,
-            step: float = None
+            name: str,  # 名称
+            start: float,  # 开始值
+            end: float = None,  # 结束值
+            step: float = None  # 步长
     ) -> Tuple[bool, str]:
-        """"""
+        """参数字典中添加参数"""
         if end is None and step is None:
             self.params[name] = [start]
             return True, "固定参数添加成功"
@@ -58,11 +59,11 @@ class OptimizationSetting:
         return True, f"范围参数添加成功，数量{len(value_list)}"
 
     def set_target(self, target_name: str) -> None:
-        """"""
+        """目标值的名称"""
         self.target_name = target_name
 
     def generate_settings(self) -> List[dict]:
-        """"""
+        """将参数字典中的取值范围进行笛卡尔积操作，生成所有可能的参数组合"""
         keys: dict_keys = self.params.keys()
         values: dict_values = self.params.values()
         products: list = list(product(*values))
@@ -79,7 +80,7 @@ def check_optimization_setting(
         optimization_setting: OptimizationSetting,
         output: OUTPUT_FUNC = print
 ) -> bool:
-    """"""
+    """检查遗传算法参数设置"""
     if not optimization_setting.generate_settings():
         output("优化参数组合为空，请检查")
         return False
@@ -92,13 +93,13 @@ def check_optimization_setting(
 
 
 def run_bf_optimization(
-        evaluate_func: EVALUATE_FUNC,
-        optimization_setting: OptimizationSetting,
-        key_func: KEY_FUNC,
-        max_workers: int = None,
-        output: OUTPUT_FUNC = print
+        evaluate_func: EVALUATE_FUNC,  # 评估函数
+        optimization_setting: OptimizationSetting,  # 参数设置
+        key_func: KEY_FUNC,  # 排序函数
+        max_workers: int = None,  # 最大工作进程数
+        output: OUTPUT_FUNC = print  # 输出函数默认print
 ) -> List[Tuple]:
-    """Run brutal force optimization"""
+    """Run brutal force optimization 开始执行穷举算法优化"""
     settings: List[Dict] = optimization_setting.generate_settings()
 
     output("开始执行穷举算法优化")
@@ -129,11 +130,11 @@ def run_ga_optimization(
         optimization_setting: OptimizationSetting,
         key_func: KEY_FUNC,
         max_workers: int = None,
-        population_size: int = 100,
-        ngen_size: int = 30,
+        population_size: int = 100,  # 族群大小
+        ngen_size: int = 30,  # 迭代代数
         output: OUTPUT_FUNC = print
 ) -> List[Tuple]:
-    """Run genetic algorithm optimization"""
+    """Run genetic algorithm optimization 运行遗传算法优化"""
     # Define functions for generate parameter randomly
     buf: List[Dict] = optimization_setting.generate_settings()
     settings: List[Tuple] = [list(d.items()) for d in buf]
@@ -223,6 +224,7 @@ def ga_evaluate(
 ) -> float:
     """
     Functions to be run in genetic algorithm optimization.
+    要在遗传算法优化中运行的函数
     """
     tp: tuple = tuple(parameters)
     if tp in cache:
