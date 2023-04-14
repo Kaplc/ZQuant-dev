@@ -37,11 +37,12 @@ SETTINGS: Dict[str, Any] = {
     "database.password": ""
 }
 
-# Load global setting from json file.
+# Load global setting from json file.从json文件加载全局设置
 SETTING_FILENAME: str = "vt_setting.json"
 SETTINGS.update(load_json(SETTING_FILENAME))
 
 
 def get_settings(prefix: str = "") -> Dict[str, Any]:
+    """搜索配置"""
     prefix_length: int = len(prefix)
     return {k[prefix_length:]: v for k, v in SETTINGS.items() if k.startswith(prefix)}

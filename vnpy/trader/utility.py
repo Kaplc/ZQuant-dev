@@ -18,17 +18,16 @@ from .object import BarData, TickData
 from .constant import Exchange, Interval
 
 if sys.version_info >= (3, 9):
-    from zoneinfo import ZoneInfo, available_timezones              # noqa
+    from zoneinfo import ZoneInfo, available_timezones  # noqa
 else:
-    from backports.zoneinfo import ZoneInfo, available_timezones    # noqa
-
+    from backports.zoneinfo import ZoneInfo, available_timezones  # noqa
 
 log_formatter: logging.Formatter = logging.Formatter('[%(asctime)s] %(message)s')
 
 
 def extract_vt_symbol(vt_symbol: str) -> Tuple[str, Exchange]:
     """
-    :return: (symbol, exchange)
+    拆包vt_symbol
     """
     symbol, exchange_str = vt_symbol.split(".")
     return symbol, Exchange(exchange_str)
@@ -37,6 +36,7 @@ def extract_vt_symbol(vt_symbol: str) -> Tuple[str, Exchange]:
 def generate_vt_symbol(symbol: str, exchange: Exchange) -> str:
     """
     return vt_symbol
+    合成vt_symbol
     """
     return f"{symbol}.{exchange.value}"
 
@@ -44,6 +44,7 @@ def generate_vt_symbol(symbol: str, exchange: Exchange) -> str:
 def _get_trader_dir(temp_name: str) -> Tuple[Path, Path]:
     """
     Get path where trader is running in.
+    获取工作目录
     """
     cwd: Path = Path.cwd()
     temp_path: Path = cwd.joinpath(temp_name)
@@ -61,16 +62,17 @@ def _get_trader_dir(temp_name: str) -> Tuple[Path, Path]:
     if not temp_path.exists():
         temp_path.mkdir()
 
-    return home_path, temp_path
+    return home_path, temp_path  # 绝对路径, 相对路径
 
 
 TRADER_DIR, TEMP_DIR = _get_trader_dir(".vntrader")
-sys.path.append(str(TRADER_DIR))
+sys.path.append(str(TRADER_DIR))  # 添加工作目录
 
 
 def get_file_path(filename: str) -> Path:
     """
     Get path for temp file with filename.
+    获取临时文件相对路径
     """
     return TEMP_DIR.joinpath(filename)
 
@@ -78,6 +80,7 @@ def get_file_path(filename: str) -> Path:
 def get_folder_path(folder_name: str) -> Path:
     """
     Get path for temp folder with folder name.
+    获取临时文件夹目录
     """
     folder_path: Path = TEMP_DIR.joinpath(folder_name)
     if not folder_path.exists():
@@ -88,6 +91,7 @@ def get_folder_path(folder_name: str) -> Path:
 def get_icon_path(filepath: str, ico_name: str) -> str:
     """
     Get path for icon file with ico name.
+    获取ico图标路径
     """
     ui_path: Path = Path(filepath).parent
     icon_path: Path = ui_path.joinpath("ico", ico_name)
@@ -97,6 +101,7 @@ def get_icon_path(filepath: str, ico_name: str) -> str:
 def load_json(filename: str) -> dict:
     """
     Load data from json file in temp path.
+    从临时文件目录加载json文件
     """
     filepath: Path = get_file_path(filename)
 
@@ -112,6 +117,7 @@ def load_json(filename: str) -> dict:
 def save_json(filename: str, data: dict) -> None:
     """
     Save data into json file in temp path.
+    保持json到临时文件目录
     """
     filepath: Path = get_file_path(filename)
     with open(filepath, mode="w+", encoding="UTF-8") as f:
@@ -126,6 +132,7 @@ def save_json(filename: str, data: dict) -> None:
 def round_to(value: float, target: float) -> float:
     """
     Round price to price tick value.
+    四舍五入
     """
     value: Decimal = Decimal(str(value))
     target: Decimal = Decimal(str(target))
@@ -136,6 +143,7 @@ def round_to(value: float, target: float) -> float:
 def floor_to(value: float, target: float) -> float:
     """
     Similar to math.floor function, but to target float number.
+    将一个浮点数值向下取整到指定的目标值
     """
     value: Decimal = Decimal(str(value))
     target: Decimal = Decimal(str(target))
@@ -146,6 +154,7 @@ def floor_to(value: float, target: float) -> float:
 def ceil_to(value: float, target: float) -> float:
     """
     Similar to math.ceil function, but to target float number.
+    将一个浮点数值向上取整到指定的目标值
     """
     value: Decimal = Decimal(str(value))
     target: Decimal = Decimal(str(target))
@@ -156,6 +165,7 @@ def ceil_to(value: float, target: float) -> float:
 def get_digits(value: float) -> int:
     """
     Get number of digits after decimal point.
+    获取小数点后的位数
     """
     value_str: str = str(value)
 
@@ -180,11 +190,11 @@ class BarGenerator:
     """
 
     def __init__(
-        self,
-        on_bar: Callable,
-        window: int = 0,
-        on_window_bar: Callable = None,
-        interval: Interval = Interval.MINUTE
+            self,
+            on_bar: Callable,
+            window: int = 0,
+            on_window_bar: Callable = None,
+            interval: Interval = Interval.MINUTE
     ) -> None:
         """Constructor"""
         self.bar: BarData = None
@@ -218,8 +228,8 @@ class BarGenerator:
         if not self.bar:
             new_minute = True
         elif (
-            (self.bar.datetime.minute != tick.datetime.minute)
-            or (self.bar.datetime.hour != tick.datetime.hour)
+                (self.bar.datetime.minute != tick.datetime.minute)
+                or (self.bar.datetime.hour != tick.datetime.hour)
         ):
             self.bar.datetime = self.bar.datetime.replace(
                 second=0, microsecond=0
@@ -568,11 +578,11 @@ class ArrayManager(object):
         return result[-1]
 
     def apo(
-        self,
-        fast_period: int,
-        slow_period: int,
-        matype: int = 0,
-        array: bool = False
+            self,
+            fast_period: int,
+            slow_period: int,
+            matype: int = 0,
+            array: bool = False
     ) -> Union[float, np.ndarray]:
         """
         APO.
@@ -601,11 +611,11 @@ class ArrayManager(object):
         return result[-1]
 
     def ppo(
-        self,
-        fast_period: int,
-        slow_period: int,
-        matype: int = 0,
-        array: bool = False
+            self,
+            fast_period: int,
+            slow_period: int,
+            matype: int = 0,
+            array: bool = False
     ) -> Union[float, np.ndarray]:
         """
         PPO.
@@ -715,11 +725,11 @@ class ArrayManager(object):
         return result[-1]
 
     def macd(
-        self,
-        fast_period: int,
-        slow_period: int,
-        signal_period: int,
-        array: bool = False
+            self,
+            fast_period: int,
+            slow_period: int,
+            signal_period: int,
+            array: bool = False
     ) -> Union[
         Tuple[np.ndarray, np.ndarray, np.ndarray],
         Tuple[float, float, float]
@@ -789,11 +799,11 @@ class ArrayManager(object):
         return result[-1]
 
     def ultosc(
-        self,
-        time_period1: int = 7,
-        time_period2: int = 14,
-        time_period3: int = 28,
-        array: bool = False
+            self,
+            time_period1: int = 7,
+            time_period2: int = 14,
+            time_period3: int = 28,
+            array: bool = False
     ) -> Union[float, np.ndarray]:
         """
         Ultimate Oscillator.
@@ -813,10 +823,10 @@ class ArrayManager(object):
         return result[-1]
 
     def boll(
-        self,
-        n: int,
-        dev: float,
-        array: bool = False
+            self,
+            n: int,
+            dev: float,
+            array: bool = False
     ) -> Union[
         Tuple[np.ndarray, np.ndarray],
         Tuple[float, float]
@@ -833,10 +843,10 @@ class ArrayManager(object):
         return up, down
 
     def keltner(
-        self,
-        n: int,
-        dev: float,
-        array: bool = False
+            self,
+            n: int,
+            dev: float,
+            array: bool = False
     ) -> Union[
         Tuple[np.ndarray, np.ndarray],
         Tuple[float, float]
@@ -853,7 +863,7 @@ class ArrayManager(object):
         return up, down
 
     def donchian(
-        self, n: int, array: bool = False
+            self, n: int, array: bool = False
     ) -> Union[
         Tuple[np.ndarray, np.ndarray],
         Tuple[float, float]
@@ -869,9 +879,9 @@ class ArrayManager(object):
         return up[-1], down[-1]
 
     def aroon(
-        self,
-        n: int,
-        array: bool = False
+            self,
+            n: int,
+            array: bool = False
     ) -> Union[
         Tuple[np.ndarray, np.ndarray],
         Tuple[float, float]
@@ -934,10 +944,10 @@ class ArrayManager(object):
         return result[-1]
 
     def adosc(
-        self,
-        fast_period: int,
-        slow_period: int,
-        array: bool = False
+            self,
+            fast_period: int,
+            slow_period: int,
+            array: bool = False
     ) -> Union[float, np.ndarray]:
         """
         ADOSC.
@@ -958,13 +968,13 @@ class ArrayManager(object):
         return result[-1]
 
     def stoch(
-        self,
-        fastk_period: int,
-        slowk_period: int,
-        slowk_matype: int,
-        slowd_period: int,
-        slowd_matype: int,
-        array: bool = False
+            self,
+            fastk_period: int,
+            slowk_period: int,
+            slowk_matype: int,
+            slowd_period: int,
+            slowd_matype: int,
+            array: bool = False
     ) -> Union[
         Tuple[float, float],
         Tuple[np.ndarray, np.ndarray]
@@ -992,10 +1002,12 @@ def virtual(func: Callable) -> Callable:
     mark a function as "virtual", which means that this function can be override.
     any base class should use this or @abstractmethod to decorate all functions
     that can be (re)implemented by subclasses.
+    将函数标记为“虚拟”，这意味着该函数可以被覆盖。任何基类都应该使用this或@abstractmethod来修饰所有可以由子类（重新）实现的函数
     """
     return func
 
 
+# 共享 FileHandler 对象，便于日志器写入
 file_handlers: Dict[str, logging.FileHandler] = {}
 
 
@@ -1010,6 +1022,7 @@ def _get_file_logger_handler(filename: str) -> logging.FileHandler:
 def get_file_logger(filename: str) -> logging.Logger:
     """
     return a logger that writes records into a file.
+    返回日志器
     """
     logger: logging.Logger = logging.getLogger(filename)
     handler: logging.FileHandler = _get_file_logger_handler(filename)  # get singleton handler.
