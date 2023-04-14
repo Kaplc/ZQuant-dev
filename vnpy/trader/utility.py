@@ -187,33 +187,38 @@ class BarGenerator:
     Notice:
     1. for x minute bar, x must be able to divide 60: 2, 3, 5, 6, 10, 15, 20, 30
     2. for x hour bar, x can be any number
+
+    用于tick数据生成1分钟K线 -> x分钟K线
+
     """
 
     def __init__(
             self,
-            on_bar: Callable,
-            window: int = 0,
-            on_window_bar: Callable = None,
-            interval: Interval = Interval.MINUTE
+            on_bar: Callable,  # 处理新的K线数据的回调函数
+            window: int = 0,  # 窗口的大小，通常在处理滚动窗口数据时使用
+            on_window_bar: Callable = None,  # 处理窗口K线数据的回调函数
+            interval: Interval = Interval.MINUTE  # K线数据的时间间隔
     ) -> None:
         """Constructor"""
-        self.bar: BarData = None
-        self.on_bar: Callable = on_bar
+        self.bar: BarData = None  # K线数据对象
+        self.on_bar: Callable = on_bar  # K线数据的回调函数
 
-        self.interval: Interval = interval
-        self.interval_count: int = 0
+        self.interval: Interval = interval  # K线周期
+        self.interval_count: int = 0  # 当前时间间隔K线数量
 
-        self.hour_bar: BarData = None
+        self.hour_bar: BarData = None  # 小时K
 
-        self.window: int = window
-        self.window_bar: BarData = None
-        self.on_window_bar: Callable = on_window_bar
+        self.window: int = window  # 窗口大小
+        self.window_bar: BarData = None  # 当前窗口K线数据
+        self.on_window_bar: Callable = on_window_bar  # 窗口回调函数
 
-        self.last_tick: TickData = None
+        self.last_tick: TickData = None  # 最近tick数据
 
     def update_tick(self, tick: TickData) -> None:
         """
         Update new tick data into generator.
+        tick数据转换到生成器内，后续生成相应的K线周期
+        用于在生成器中处理接收到的 Tick 数据，并根据时间间隔生成对应的 Bar 数据，并触发相应的回调函数处理生成的 Bar 数据
         """
         new_minute: bool = False
 
@@ -276,6 +281,7 @@ class BarGenerator:
     def update_bar(self, bar: BarData) -> None:
         """
         Update 1 minute bar into generator
+
         """
         if self.interval == Interval.MINUTE:
             self.update_bar_minute_window(bar)
@@ -283,7 +289,7 @@ class BarGenerator:
             self.update_bar_hour_window(bar)
 
     def update_bar_minute_window(self, bar: BarData) -> None:
-        """"""
+        """生成器中处理生成的分钟 Bar 数据，并根据设定的窗口大小生成对应的窗口 Bar 数据，并触发相应的回调函数处理生成的窗口 Bar 数据"""
         # If not inited, create window bar object
         if not self.window_bar:
             dt: datetime = bar.datetime.replace(second=0, microsecond=0)
@@ -319,7 +325,7 @@ class BarGenerator:
             self.window_bar = None
 
     def update_bar_hour_window(self, bar: BarData) -> None:
-        """"""
+        """同上，窗口处理小时K线"""
         # If not inited, create window bar object
         if not self.hour_bar:
             dt: datetime = bar.datetime.replace(minute=0, second=0, microsecond=0)
@@ -398,7 +404,7 @@ class BarGenerator:
             self.on_hour_bar(finished_bar)
 
     def on_hour_bar(self, bar: BarData) -> None:
-        """"""
+        """同上处理小时K线"""
         if self.window == 1:
             self.on_window_bar(bar)
         else:
@@ -436,6 +442,7 @@ class BarGenerator:
     def generate(self) -> Optional[BarData]:
         """
         Generate the bar data and call callback immediately.
+        生成K线数据并马上处理
         """
         bar: BarData = self.bar
 
