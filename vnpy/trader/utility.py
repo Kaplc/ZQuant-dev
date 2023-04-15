@@ -459,25 +459,28 @@ class ArrayManager(object):
     For:
     1. time series container of bar data
     2. calculating technical indicator value
+    K线容器和计算指标
     """
 
     def __init__(self, size: int = 100) -> None:
         """Constructor"""
-        self.count: int = 0
-        self.size: int = size
-        self.inited: bool = False
+        self.count: int = 0  # K线数量
+        self.size: int = size  # 数组储存K线数量大小
+        self.inited: bool = False  # 数组初始化状态
 
+        # np.zeros(size) -> np数组初始化为0,size设置大小
         self.open_array: np.ndarray = np.zeros(size)
         self.high_array: np.ndarray = np.zeros(size)
         self.low_array: np.ndarray = np.zeros(size)
         self.close_array: np.ndarray = np.zeros(size)
         self.volume_array: np.ndarray = np.zeros(size)
-        self.turnover_array: np.ndarray = np.zeros(size)
-        self.open_interest_array: np.ndarray = np.zeros(size)
+        self.turnover_array: np.ndarray = np.zeros(size)  # 成交额
+        self.open_interest_array: np.ndarray = np.zeros(size)  # 持仓量
 
     def update_bar(self, bar: BarData) -> None:
         """
         Update new bar data into array manager.
+        更新K线数据
         """
         self.count += 1
         if not self.inited and self.count >= self.size:
@@ -503,6 +506,7 @@ class ArrayManager(object):
     def open(self) -> np.ndarray:
         """
         Get open price time series.
+        获取开盘价数组
         """
         return self.open_array
 
@@ -510,6 +514,7 @@ class ArrayManager(object):
     def high(self) -> np.ndarray:
         """
         Get high price time series.
+        获取最高价
         """
         return self.high_array
 
@@ -517,6 +522,7 @@ class ArrayManager(object):
     def low(self) -> np.ndarray:
         """
         Get low price time series.
+        最低价
         """
         return self.low_array
 
@@ -531,6 +537,7 @@ class ArrayManager(object):
     def volume(self) -> np.ndarray:
         """
         Get trading volume time series.
+        成交量
         """
         return self.volume_array
 
@@ -538,6 +545,7 @@ class ArrayManager(object):
     def turnover(self) -> np.ndarray:
         """
         Get trading turnover time series.
+        成交额
         """
         return self.turnover_array
 
@@ -545,12 +553,15 @@ class ArrayManager(object):
     def open_interest(self) -> np.ndarray:
         """
         Get trading volume time series.
+        持仓
         """
         return self.open_interest_array
 
+    # 各类指标
     def sma(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         Simple moving average.
+        简单移动均线
         """
         result: np.ndarray = talib.SMA(self.close, n)
         if array:
@@ -560,6 +571,7 @@ class ArrayManager(object):
     def ema(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         Exponential moving average.
+        指数移动平均线
         """
         result: np.ndarray = talib.EMA(self.close, n)
         if array:
@@ -569,6 +581,7 @@ class ArrayManager(object):
     def kama(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         KAMA.
+        平滑移动均线
         """
         result: np.ndarray = talib.KAMA(self.close, n)
         if array:
@@ -578,6 +591,7 @@ class ArrayManager(object):
     def wma(self, n: int, array: bool = False) -> Union[float, np.ndarray]:
         """
         WMA.
+
         """
         result: np.ndarray = talib.WMA(self.close, n)
         if array:
