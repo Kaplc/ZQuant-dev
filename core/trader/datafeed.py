@@ -36,7 +36,7 @@ datafeed: BaseDatafeed = None
 
 
 def get_datafeed() -> BaseDatafeed:
-    """获取回测使用的数据库"""
+    """服务器数据服务"""
     # Return datafeed object if already inited
     global datafeed
     if datafeed:
@@ -44,7 +44,7 @@ def get_datafeed() -> BaseDatafeed:
 
     # Read datafeed related global setting
     datafeed_name: str = SETTINGS["datafeed.name"]
-    module_name: str = f"vnpy_{datafeed_name}"
+    module_name: str = f"apps.datafeed.vnpy_{datafeed_name}"
 
     # Try to import datafeed module
     try:

@@ -2,12 +2,12 @@ from typing import List, Tuple, Dict, Optional
 from functools import partial
 from datetime import datetime, timedelta
 
-from vnpy.trader.ui import QtWidgets, QtCore
-from vnpy.trader.engine import MainEngine, EventEngine
-from vnpy.trader.constant import Interval, Exchange
-from vnpy.trader.object import BarData
-from vnpy.trader.database import DB_TZ
-from vnpy.trader.utility import available_timezones
+from core.trader.ui import QtWidgets, QtCore
+from core.trader.engine import MainEngine, EventEngine
+from core.trader.constant import Interval, Exchange
+from core.trader.object import BarData
+from core.trader.database import DB_TZ
+from core.trader.utility import available_timezones
 
 from ..engine import APP_NAME, ManagerEngine, BarOverview
 
@@ -26,7 +26,7 @@ class ManagerWidget(QtWidgets.QWidget):
         self.init_ui()
 
     def init_ui(self) -> None:
-        """"""
+        """界面"""
         self.setWindowTitle("数据管理")
 
         self.init_tree()

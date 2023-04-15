@@ -1,4 +1,4 @@
-from vnpy.trader.ui import QtGui
+from core.trader.ui import QtGui
 
 
 WHITE_COLOR = (255, 255, 255)

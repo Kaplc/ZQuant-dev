@@ -14,16 +14,16 @@ from peewee import (
     fn
 )
 
-from vnpy.trader.constant import Exchange, Interval
-from vnpy.trader.object import BarData, TickData
-from vnpy.trader.database import (
+from core.trader.constant import Exchange, Interval
+from core.trader.object import BarData, TickData
+from core.trader.database import (
     BaseDatabase,
     BarOverview,
     TickOverview,
     DB_TZ,
     convert_tz
 )
-from vnpy.trader.setting import SETTINGS
+from core.trader.setting import SETTINGS
 
 db: PeeweeMySQLDatabase = PeeweeMySQLDatabase(
     database=SETTINGS["database.database"],

@@ -23,7 +23,7 @@
 from pathlib import Path
 
 import importlib_metadata
-from vnpy.trader.app import BaseApp
+from core.trader.app import BaseApp
 
 from .engine import APP_NAME, ManagerEngine
 

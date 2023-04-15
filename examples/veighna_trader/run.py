@@ -1,8 +1,8 @@
 # flake8: noqa
-from vnpy.event import EventEngine
+from core.event import EventEngine
 
-from vnpy.trader.engine import MainEngine
-from vnpy.trader.ui import MainWindow, create_qapp
+from core.trader.engine import MainEngine
+from core.trader.ui import MainWindow, create_qapp
 
 # from vnpy_ctp import CtpGateway
 # from vnpy_ctptest import CtptestGateway
@@ -34,7 +34,9 @@ from vnpy.trader.ui import MainWindow, create_qapp
 # from vnpy_chartwizard import ChartWizardApp
 # from vnpy_rpcservice import RpcServiceApp
 # from vnpy_excelrtd import ExcelRtdApp
-from vnpy.vnpy_datamanager import DataManagerApp
+from apps.database.vnpy_datamanager import DataManagerApp
+
+
 # from vnpy_datarecorder import DataRecorderApp
 # from vnpy_riskmanager import RiskManagerApp
 # from vnpy_webtrader import WebTraderApp
@@ -88,11 +90,24 @@ def main():
     # main_engine.add_app(RiskManagerApp)
     # main_engine.add_app(WebTraderApp)
     # main_engine.add_app(PortfolioManagerApp)
-    
+
     main_window = MainWindow(main_engine, event_engine)
     main_window.showMaximized()
-
+    get_project_path()
     qapp.exec()
+
+
+import sys
+
+
+def get_project_path():
+    """
+    获取当前项目的导包路径
+    """
+    # 获取当前项目的导包路径，即 sys.path 的第一个元素
+
+    print(sys.path)
+
 
 
 if __name__ == "__main__":

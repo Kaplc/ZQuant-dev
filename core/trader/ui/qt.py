@@ -33,7 +33,7 @@ def create_qapp(app_name: str = "VeighNa Trader") -> QtWidgets.QApplication:
     qapp.setFont(font)
 
     # Set up icon
-    icon: QtGui.QIcon = QtGui.QIcon(get_icon_path(__file__, "vnpy.ico"))
+    icon: QtGui.QIcon = QtGui.QIcon(get_icon_path(__file__, "core.ico"))
     qapp.setWindowIcon(icon)
 
     # Set up windows process ID

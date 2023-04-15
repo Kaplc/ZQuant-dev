@@ -2,7 +2,7 @@ from typing import Dict, List, Tuple
 from datetime import datetime
 from _collections_abc import dict_keys
 
-from vnpy.trader.object import BarData
+from core.trader.object import BarData
 
 from .base import to_int
 

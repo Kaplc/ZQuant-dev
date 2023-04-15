@@ -8,8 +8,8 @@ from functools import partial
 from importlib import import_module
 from typing import Callable, Dict, List, Tuple
 
-import vnpy
-from vnpy.event import EventEngine
+import core
+from core.event import EventEngine
 
 from .qt import QtCore, QtGui, QtWidgets
 from .widget import (
@@ -43,7 +43,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_engine: MainEngine = main_engine
         self.event_engine: EventEngine = event_engine
 
-        self.window_title: str = f"VeighNa Trader 社区版 - {vnpy.__version__}   [{TRADER_DIR}]"
+        self.window_title: str = f"VeighNa Trader 社区版 - {core.__version__}   [{TRADER_DIR}]"
 
         self.widgets: Dict[str, QtWidgets.QWidget] = {}
         self.monitors: Dict[str, BaseMonitor] = {}

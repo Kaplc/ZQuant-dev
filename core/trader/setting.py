@@ -23,18 +23,18 @@ SETTINGS: Dict[str, Any] = {
     "email.password": "",
     "email.sender": "",
     "email.receiver": "",
-    # 回测数据库配置
+    # 服务器数据服务配置
     "datafeed.name": "",
     "datafeed.username": "",
     "datafeed.password": "",
-    # 数据库配置
+    # 本地数据库配置
     "database.timezone": get_localzone_name(),
-    "database.name": "sqlite",
-    "database.database": "database.db",
-    "database.host": "",
-    "database.port": 0,
-    "database.user": "",
-    "database.password": ""
+    "database.name": "mysql",
+    "database.database": "vnpy_test",
+    "database.host": "127.0.01",
+    "database.port": 3306,
+    "database.user": "root",
+    "database.password": "123456"
 }
 
 # Load global setting from json file.从json文件加载全局设置
