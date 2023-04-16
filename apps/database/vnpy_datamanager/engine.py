@@ -13,37 +13,37 @@ APP_NAME = "DataManager"
 
 
 class ManagerEngine(BaseEngine):
-    """"""
+    """数据库管理引擎"""
 
     def __init__(
-        self,
-        main_engine: MainEngine,
-        event_engine: EventEngine,
+            self,
+            main_engine: MainEngine,
+            event_engine: EventEngine,
     ) -> None:
         """"""
         super().__init__(main_engine, event_engine, APP_NAME)
 
-        self.database: BaseDatabase = get_database()
-        self.datafeed: BaseDatafeed = get_datafeed()
+        self.database: BaseDatabase = get_database()  # 获取数据库对象
+        self.datafeed: BaseDatafeed = get_datafeed()  # 获取数据服务对象
 
     def import_data_from_csv(
-        self,
-        file_path: str,
-        symbol: str,
-        exchange: Exchange,
-        interval: Interval,
-        tz_name: str,
-        datetime_head: str,
-        open_head: str,
-        high_head: str,
-        low_head: str,
-        close_head: str,
-        volume_head: str,
-        turnover_head: str,
-        open_interest_head: str,
-        datetime_format: str
+            self,
+            file_path: str,
+            symbol: str,
+            exchange: Exchange,
+            interval: Interval,
+            tz_name: str,
+            datetime_head: str,
+            open_head: str,
+            high_head: str,
+            low_head: str,
+            close_head: str,
+            volume_head: str,
+            turnover_head: str,
+            open_interest_head: str,
+            datetime_format: str
     ) -> tuple:
-        """"""
+        """csv文件导入数据"""
         with open(file_path, "rt") as f:
             buf: list = [line.replace("\0", "") for line in f]
 
@@ -88,21 +88,21 @@ class ManagerEngine(BaseEngine):
 
         end: datetime = bar.datetime
 
-        # insert into database
+        # insert into database 保存到数据库
         self.database.save_bar_data(bars)
 
         return start, end, count
 
     def output_data_to_csv(
-        self,
-        file_path: str,
-        symbol: str,
-        exchange: Exchange,
-        interval: Interval,
-        start: datetime,
-        end: datetime
+            self,
+            file_path: str,
+            symbol: str,
+            exchange: Exchange,
+            interval: Interval,
+            start: datetime,
+            end: datetime
     ) -> bool:
-        """"""
+        """数据库导出数据成csv"""
         bars: List[BarData] = self.load_bar_data(symbol, exchange, interval, start, end)
 
         fieldnames: list = [
@@ -143,16 +143,16 @@ class ManagerEngine(BaseEngine):
             return False
 
     def get_bar_overview(self) -> List[BarOverview]:
-        """"""
+        """调用database对象"""
         return self.database.get_bar_overview()
 
     def load_bar_data(
-        self,
-        symbol: str,
-        exchange: Exchange,
-        interval: Interval,
-        start: datetime,
-        end: datetime
+            self,
+            symbol: str,
+            exchange: Exchange,
+            interval: Interval,
+            start: datetime,
+            end: datetime
     ) -> List[BarData]:
         """"""
         bars: List[BarData] = self.database.load_bar_data(
@@ -166,10 +166,10 @@ class ManagerEngine(BaseEngine):
         return bars
 
     def delete_bar_data(
-        self,
-        symbol: str,
-        exchange: Exchange,
-        interval: Interval
+            self,
+            symbol: str,
+            exchange: Exchange,
+            interval: Interval
     ) -> int:
         """"""
         count: int = self.database.delete_bar_data(
@@ -181,16 +181,17 @@ class ManagerEngine(BaseEngine):
         return count
 
     def download_bar_data(
-        self,
-        symbol: str,
-        exchange: Exchange,
-        interval: str,
-        start: datetime,
-        output: Callable
+            self,
+            symbol: str,
+            exchange: Exchange,
+            interval: str,
+            start: datetime,
+            output: Callable
     ) -> int:
         """
-        Query bar data from datafeed.
+        Query bar data from datafeed. 服务器下载K线数据
         """
+        # 创建请求对象
         req: HistoryRequest = HistoryRequest(
             symbol=symbol,
             exchange=exchange,
@@ -202,30 +203,30 @@ class ManagerEngine(BaseEngine):
         vt_symbol: str = f"{symbol}.{exchange.value}"
         contract: Optional[ContractData] = self.main_engine.get_contract(vt_symbol)
 
-        # If history data provided in gateway, then query
+        # If history data provided in gateway, then query 交易接口获取历史数据
         if contract and contract.history_data:
             data: List[BarData] = self.main_engine.query_history(
                 req, contract.gateway_name
             )
-        # Otherwise use datafeed to query data
+        # Otherwise use datafeed to query data 数据服务获取
         else:
             data: List[BarData] = self.datafeed.query_bar_history(req, output)
 
         if data:
             self.database.save_bar_data(data)
-            return(len(data))
+            return (len(data))
 
         return 0
 
     def download_tick_data(
-        self,
-        symbol: str,
-        exchange: Exchange,
-        start: datetime,
-        output: Callable
+            self,
+            symbol: str,
+            exchange: Exchange,
+            start: datetime,
+            output: Callable
     ) -> int:
         """
-        Query tick data from datafeed.
+        Query tick data from datafeed. 服务器下载tick数据
         """
         req: HistoryRequest = HistoryRequest(
             symbol=symbol,
@@ -234,10 +235,10 @@ class ManagerEngine(BaseEngine):
             end=datetime.now(DB_TZ)
         )
 
-        data: List[TickData] = self.datafeed.query_tick_history(req, output)
+        data: List[TickData] = self.datafeed.query_tick_history(req, output)  # 数据服务获取
 
         if data:
             self.database.save_tick_data(data)
-            return(len(data))
+            return (len(data))
 
         return 0

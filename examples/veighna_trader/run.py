@@ -93,21 +93,7 @@ def main():
 
     main_window = MainWindow(main_engine, event_engine)
     main_window.showMaximized()
-    get_project_path()
     qapp.exec()
-
-
-import sys
-
-
-def get_project_path():
-    """
-    获取当前项目的导包路径
-    """
-    # 获取当前项目的导包路径，即 sys.path 的第一个元素
-
-    print(sys.path)
-
 
 
 if __name__ == "__main__":

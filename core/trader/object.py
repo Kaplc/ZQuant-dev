@@ -380,6 +380,7 @@ class OrderRequest:
 class CancelRequest:
     """
         Request sending to specific gateway for canceling an existing order.
+        取消订单请求
     """
 
     orderid: str
@@ -395,6 +396,7 @@ class CancelRequest:
 class HistoryRequest:
     """
         Request sending to specific gateway for querying history data.
+        请求发送到服务器api以查询历史数据
     """
 
     symbol: str
@@ -412,6 +414,7 @@ class HistoryRequest:
 class QuoteRequest:
     """
         Request sending to specific gateway for creating a new quote.
+        获取报价请求
     """
 
     symbol: str

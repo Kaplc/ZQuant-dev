@@ -25,6 +25,7 @@ from core.trader.database import (
 )
 from core.trader.setting import SETTINGS
 
+# 创建peewee连接mysql对象
 db: PeeweeMySQLDatabase = PeeweeMySQLDatabase(
     database=SETTINGS["database.database"],
     user=SETTINGS["database.user"],
@@ -43,7 +44,7 @@ class DateTimeMillisecondField(DateTimeField):
 
 
 class DbBarData(Model):
-    """K线数据表映射对象"""
+    """K线数据表模型类"""
 
     id: AutoField = AutoField()
 
@@ -66,7 +67,7 @@ class DbBarData(Model):
 
 
 class DbTickData(Model):
-    """TICK数据表映射对象"""
+    """TICK数据表模型类"""
 
     id: AutoField = AutoField()
 
@@ -120,7 +121,7 @@ class DbTickData(Model):
 
 
 class DbBarOverview(Model):
-    """K线汇总数据表映射对象"""
+    """K线汇总数据表模型类"""
 
     id: AutoField = AutoField()
 
@@ -137,7 +138,7 @@ class DbBarOverview(Model):
 
 
 class DbTickOverview(Model):
-    """Tick汇总数据表映射对象"""
+    """Tick汇总数据模型类"""
 
     id: AutoField = AutoField()
 
@@ -157,9 +158,9 @@ class MysqlDatabase(BaseDatabase):
 
     def __init__(self) -> None:
         """"""
-        self.db: PeeweeMySQLDatabase = db
-        self.db.connect()
-        self.db.create_tables([DbBarData, DbTickData, DbBarOverview, DbTickOverview])
+        self.db: PeeweeMySQLDatabase = db  # peewee对象
+        self.db.connect()  # 连接
+        self.db.create_tables([DbBarData, DbTickData, DbBarOverview, DbTickOverview])  # 模型类->创建表
 
     def save_bar_data(self, bars: List[BarData], stream: bool = False) -> bool:
         """保存K线数据"""

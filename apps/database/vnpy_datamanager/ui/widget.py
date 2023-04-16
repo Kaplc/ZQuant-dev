@@ -32,6 +32,7 @@ class ManagerWidget(QtWidgets.QWidget):
         self.init_tree()
         self.init_table()
         self.init_child()
+        self.refresh_tree()  # 进入ui自动刷新
 
         refresh_button: QtWidgets.QPushButton = QtWidgets.QPushButton("刷新")
         refresh_button.clicked.connect(self.refresh_tree)
@@ -185,8 +186,10 @@ class ManagerWidget(QtWidgets.QWidget):
                     self.delete_data,
                     overview.symbol,
                     overview.exchange,
-                    overview.interval
+                    overview.interval,
+
                 )
+
                 delete_button.clicked.connect(delete_func)
 
                 self.tree.setItemWidget(item, 7, show_button)
@@ -252,12 +255,12 @@ class ManagerWidget(QtWidgets.QWidget):
         QtWidgets.QMessageBox.information(self, "载入成功！", msg)
 
     def output_data(
-        self,
-        symbol: str,
-        exchange: Exchange,
-        interval: Interval,
-        start: datetime,
-        end: datetime
+            self,
+            symbol: str,
+            exchange: Exchange,
+            interval: Interval,
+            start: datetime,
+            end: datetime
     ) -> None:
         """"""
         # Get output date range
@@ -294,12 +297,12 @@ class ManagerWidget(QtWidgets.QWidget):
             )
 
     def show_data(
-        self,
-        symbol: str,
-        exchange: Exchange,
-        interval: Interval,
-        start: datetime,
-        end: datetime
+            self,
+            symbol: str,
+            exchange: Exchange,
+            interval: Interval,
+            start: datetime,
+            end: datetime
     ) -> None:
         """"""
         # Get output date range
@@ -331,10 +334,10 @@ class ManagerWidget(QtWidgets.QWidget):
             self.table.setItem(row, 7, DataCell(str(bar.open_interest)))
 
     def delete_data(
-        self,
-        symbol: str,
-        exchange: Exchange,
-        interval: Interval
+            self,
+            symbol: str,
+            exchange: Exchange,
+            interval: Interval
     ) -> None:
         """"""
         n = QtWidgets.QMessageBox.warning(
@@ -353,7 +356,7 @@ class ManagerWidget(QtWidgets.QWidget):
             exchange,
             interval
         )
-
+        self.refresh_tree()  # 添加删除自动刷新
         QtWidgets.QMessageBox.information(
             self,
             "删除成功",
