@@ -283,7 +283,7 @@ class MysqlDatabase(BaseDatabase):
             start: datetime,
             end: datetime
     ) -> List[BarData]:
-        """"""
+        """加载K线数据"""
         s: ModelSelect = (
             DbBarData.select().where(
                 (DbBarData.symbol == symbol)
