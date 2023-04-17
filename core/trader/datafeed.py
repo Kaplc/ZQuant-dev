@@ -51,7 +51,7 @@ def get_datafeed() -> BaseDatafeed:
         module: ModuleType = import_module(module_name)
     except ModuleNotFoundError:
         print(f"找不到数据服务驱动{module_name}，使用默认的RQData数据服务")
-        module: ModuleType = import_module("vnpy_rqdata")
+        module: ModuleType = import_module("apps.datafeed.vnpy_rqdata")
 
     # Create datafeed object from module
     datafeed = module.Datafeed()
