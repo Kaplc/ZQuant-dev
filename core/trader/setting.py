@@ -30,7 +30,7 @@ SETTINGS: Dict[str, Any] = {
     # 本地数据库配置
     "database.timezone": get_localzone_name(),
     "database.name": "mysql",
-    "database.database": "vnpy_test",
+    "database.database": "ZQuant_dev",
     "database.host": "127.0.01",
     "database.port": 3306,
     "database.user": "root",

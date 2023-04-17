@@ -1,4 +1,4 @@
-from binance.lib.utils import check_required_parameters, check_required_parameter
+from sdk.binance_sdk.binance.lib.utils import check_required_parameters, check_required_parameter
 
 
 def loan_history(self, asset: str, **kwargs):
@@ -296,7 +296,7 @@ def loan_collateral_data(self, **kwargs):
 
 
 def loan_collateral_rate(
-    self, loanCoin: str, collateralCoin: str, repayAmount: float, **kwargs
+        self, loanCoin: str, collateralCoin: str, repayAmount: float, **kwargs
 ):
     """Check Collateral Repay Rate (USER_DATA)
 
