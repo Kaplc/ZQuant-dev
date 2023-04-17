@@ -3,12 +3,12 @@ from json import JSONDecodeError
 import logging
 import requests
 from .__version__ import __version__
-from binance.error import ClientError, ServerError
-from binance.lib.utils import get_timestamp
-from binance.lib.utils import cleanNoneValue
-from binance.lib.utils import encoded_string
-from binance.lib.utils import check_required_parameter
-from binance.lib.authentication import hmac_hashing, rsa_signature
+from sdk.binance_sdk.binance.error import ClientError, ServerError
+from sdk.binance_sdk.binance.lib.utils import get_timestamp
+from sdk.binance_sdk.binance.lib.utils import cleanNoneValue
+from sdk.binance_sdk.binance.lib.utils import encoded_string
+from sdk.binance_sdk.binance.lib.utils import check_required_parameter
+from sdk.binance_sdk.binance.lib.authentication import hmac_hashing, rsa_signature
 
 
 class API(object):
