@@ -22,19 +22,28 @@ class API(object):
         show_header (bool, optional): whether return the whole response header. By default, it's False
         private_key (str, optional): RSA private key for RSA authentication
         private_key_pass(str, optional): Password for PSA private key
+
+        关键字Args:
+        base_url（str，optional）：API基本url，用于切换到测试网等。默认情况下，它是https://api.binance.com
+        timeout（int，optional），用于等待服务器响应的时间，秒数。https://docs.python-requests.org/en/master/user/advanced/#timeouts
+        proxies（obj，optional）：到代理URL的字典映射协议。例如｛'https':'http:1.2.3.4:8080'｝
+        show_limit_usage（bool，optional）：是否返回限制使用（请求和或订单）。默认情况下，它是False
+        show_header（bool，optional）：是否返回整个响应标头。默认情况下，它是False
+        private_key（str，optional）：用于RSA身份验证的RSA私钥
+        private_key_pass（str, optional）：用于PSA私钥的密码
     """
 
     def __init__(
-        self,
-        api_key=None,
-        api_secret=None,
-        base_url=None,
-        timeout=None,
-        proxies=None,
-        show_limit_usage=False,
-        show_header=False,
-        private_key=None,
-        private_key_pass=None,
+            self,
+            api_key=None,
+            api_secret=None,
+            base_url=None,
+            timeout=None,
+            proxies=None,
+            show_limit_usage=False,
+            show_header=False,
+            private_key=None,
+            private_key_pass=None,
     ):
         self.api_key = api_key
         self.api_secret = api_secret
@@ -45,8 +54,8 @@ class API(object):
         self.show_header = False
         self.private_key = private_key
         self.private_key_pass = private_key_pass
-        self.session = requests.Session()
-        self.session.headers.update(
+        self.session = requests.Session()  # 创建session对象
+        self.session.headers.update(  # 更新session请求头
             {
                 "Content-Type": "application/json;charset=utf-8",
                 "User-Agent": "binance-connector/" + __version__,
@@ -60,7 +69,7 @@ class API(object):
         if show_header is True:
             self.show_header = True
 
-        if type(proxies) is dict:
+        if type(proxies) is dict:  # 初始化代理URL协议映射
             self.proxies = proxies
 
         self._logger = logging.getLogger(__name__)
@@ -97,11 +106,12 @@ class API(object):
         payload["timestamp"] = get_timestamp()
         query_string = self._prepare_params(payload)
         url_path = (
-            url_path + "?" + query_string + "&signature=" + self._get_sign(query_string)
+                url_path + "?" + query_string + "&signature=" + self._get_sign(query_string)
         )
         return self.send_request(http_method, url_path)
 
     def send_request(self, http_method, url_path, payload=None):
+        """发送请求"""
         if payload is None:
             payload = {}
         url = self.base_url + url_path
@@ -129,9 +139,9 @@ class API(object):
             for key in response.headers.keys():
                 key = key.lower()
                 if (
-                    key.startswith("x-mbx-used-weight")
-                    or key.startswith("x-mbx-order-count")
-                    or key.startswith("x-sapi-used")
+                        key.startswith("x-mbx-used-weight")
+                        or key.startswith("x-mbx-order-count")
+                        or key.startswith("x-sapi-used")
                 ):
                     limit_usage[key] = response.headers[key]
             result["limit_usage"] = limit_usage
