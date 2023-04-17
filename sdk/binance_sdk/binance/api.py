@@ -116,7 +116,7 @@ class API(object):
             payload = {}
         url = self.base_url + url_path
         self._logger.debug("url: " + url)
-        params = cleanNoneValue(
+        params = cleanNoneValue(  # 清除字典中值为 None 的键值对
             {
                 "url": url,
                 "params": self._prepare_params(payload),
@@ -124,7 +124,7 @@ class API(object):
                 "proxies": self.proxies,
             }
         )
-        response = self._dispatch_request(http_method)(**params)
+        response = self._dispatch_request(http_method)(**params)  # 创建response对象
         self._logger.debug("raw response from server:" + response.text)
         self._handle_exception(response)
 
@@ -156,6 +156,7 @@ class API(object):
         return data
 
     def _prepare_params(self, params):
+        """编码转换 %40 <=> @"""
         return encoded_string(cleanNoneValue(params))
 
     def _get_sign(self, payload):
@@ -164,23 +165,25 @@ class API(object):
         return hmac_hashing(self.api_secret, payload)
 
     def _dispatch_request(self, http_method):
+        """返回对应请求方法"""
         return {
             "GET": self.session.get,
             "DELETE": self.session.delete,
             "PUT": self.session.put,
             "POST": self.session.post,
-        }.get(http_method, "GET")
+        }.get(http_method, "GET")  # 无对应默认返回"GET": self.session.get
 
     def _handle_exception(self, response):
+        """请求响应状态码的处理"""
         status_code = response.status_code
-        if status_code < 400:
+        if status_code < 400:  # 小于 400，表示请求成功，直接返回
             return
-        if 400 <= status_code < 500:
+        if 400 <= status_code < 500:  # 状态码在 400 到 500 之间，表示客户端错误，尝试解析响应的文本内容为 JSON 格式，并抛出 ClientError 异常。
             try:
                 err = json.loads(response.text)
             except JSONDecodeError:
                 raise ClientError(
-                    status_code, None, response.text, None, response.headers
+                    status_code, None, response.text, None, response.headers  # 异常中包含了状态码、错误码、错误信息、响应头和错误数据等信息
                 )
             error_data = None
             if "data" in err:
@@ -188,4 +191,4 @@ class API(object):
             raise ClientError(
                 status_code, err["code"], err["msg"], response.headers, error_data
             )
-        raise ServerError(status_code, response.text)
+        raise ServerError(status_code, response.text)  # 状态码大于等于 500，表示服务器错误，抛出 ServerError 异常

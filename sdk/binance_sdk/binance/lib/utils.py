@@ -13,6 +13,7 @@ from sdk.binance_sdk.binance.error import (
 
 
 def cleanNoneValue(d) -> dict:
+    """函数用于清除字典中值为 None 的键值对"""
     out = {}
     for k in d.keys():
         if d[k] is not None:
@@ -52,6 +53,7 @@ def get_timestamp():
 
 
 def encoded_string(query):
+    """编码转换 %40 <=> @"""
     return urlencode(query, True).replace("%40", "@")
 
 
