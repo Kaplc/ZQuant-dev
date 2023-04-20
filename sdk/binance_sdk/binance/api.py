@@ -89,12 +89,13 @@ class API(object):
         return self.send_request(http_method, url_path, payload=payload)  # 发送请求返回data
 
     def sign_request(self, http_method, url_path, payload=None):
+        """payload带签名发送请求"""
         if payload is None:
             payload = {}
-        payload["timestamp"] = get_timestamp() # 生成毫秒时间戳
+        payload["timestamp"] = get_timestamp()  # 生成毫秒时间戳
         query_string = self._prepare_params(payload)  # 编码转换 %40 <=> @
-        payload["signature"] = self._get_sign(query_string)
-        return self.send_request(http_method, url_path, payload) # 发送请求返回data
+        payload["signature"] = self._get_sign(query_string)  # 生成签名
+        return self.send_request(http_method, url_path, payload)  # 发送请求返回data
 
     def limited_encoded_sign_request(self, http_method, url_path, payload=None):
         """This is used for some endpoints has special symbol in the url.
@@ -104,6 +105,7 @@ class API(object):
         - ]
 
         so we have to append those parameters in the url
+        带签名url的发送请求
         """
         if payload is None:
             payload = {}
@@ -164,9 +166,10 @@ class API(object):
         return encoded_string(cleanNoneValue(params))
 
     def _get_sign(self, payload):
-        if self.private_key:
-            return rsa_signature(self.private_key, payload, self.private_key_pass)
-        return hmac_hashing(self.api_secret, payload)
+        """RSA/hash签名"""
+        if self.private_key:  # 有私钥
+            return rsa_signature(self.private_key, payload, self.private_key_pass)  # 对 payload 进行 RSA 签名
+        return hmac_hashing(self.api_secret, payload)  # 对 payload 进行哈希处理
 
     def _dispatch_request(self, http_method):
         """返回对应请求方法"""
