@@ -99,7 +99,6 @@ print("response content: {}".format(download_response.content))
 downloadID = download_response.json()["id"]
 print(downloadID)  # prints the download ID, example: {'id': 324225}
 
-
 # Calls the "get" function to obtain the download link for the specified symbol, dataType and time range combination
 paramsToObtainDownloadLink = {"downloadId": downloadID, "timestamp": timestamp}
 pathToObtainDownloadLink = "%s/downloadLink" % S_URL_V1
