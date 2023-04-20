@@ -24,13 +24,13 @@ SETTINGS: Dict[str, Any] = {
     "email.sender": "",
     "email.receiver": "",
     # 服务器数据服务配置
-    "datafeed.name": "",
-    "datafeed.username": "",
-    "datafeed.password": "",
+    "datafeed.name": "zquant_biandata",
+    "datafeed.username": "zzy",
+    "datafeed.password": "123456",
     # 本地数据库配置
     "database.timezone": get_localzone_name(),
     "database.name": "mysql",
-    "database.database": "ZQuant_dev",
+    "database.database": "vnpy_test",
     "database.host": "127.0.01",
     "database.port": 3306,
     "database.user": "root",

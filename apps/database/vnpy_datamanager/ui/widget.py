@@ -559,7 +559,7 @@ class ImportDialog(QtWidgets.QDialog):
 
 
 class DownloadDialog(QtWidgets.QDialog):
-    """"""
+    """下载数据"""
 
     def __init__(self, engine: ManagerEngine, parent=None) -> None:
         """"""
@@ -608,7 +608,7 @@ class DownloadDialog(QtWidgets.QDialog):
         self.setLayout(form)
 
     def download(self) -> None:
-        """"""
+        """点击下载"""
         symbol: str = self.symbol_edit.text()
         exchange: Exchange = Exchange(self.exchange_combo.currentData())
         interval: Interval = Interval(self.interval_combo.currentData())
@@ -620,7 +620,7 @@ class DownloadDialog(QtWidgets.QDialog):
         if interval == Interval.TICK:
             count: int = self.engine.download_tick_data(symbol, exchange, start, self.output)
         else:
-            count: int = self.engine.download_bar_data(symbol, exchange, interval, start, self.output)
+            count: int = self.engine.download_bar_data(symbol, exchange, interval, start, self.output)  # 调用数据库管理引擎
 
         QtWidgets.QMessageBox.information(self, "下载结束", f"下载总数据量：{count}条")
 
