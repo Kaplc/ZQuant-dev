@@ -58,7 +58,7 @@ def download_monthly_klines(trading_type, symbols, num_symbols, intervals, years
 
 def download_daily_klines(trading_type: str, symbols: list, num_symbols: int, intervals: list, dates: list,
                           start_date: str, end_date: str, folder,
-                          checksum:int):
+                          checksum: int):
     """
     下载日内K线
     :param trading_type: 'um'           - 交易类型 (spot/um(币本位)/cm(U本位))
@@ -81,14 +81,14 @@ def download_daily_klines(trading_type: str, symbols: list, num_symbols: int, in
     if not start_date:
         start_date = START_DATE
     else:
-        start_date = convert_to_date_object(start_date)
+        start_date = convert_to_date_object(start_date)  # 转换data对象
 
     if not end_date:
         end_date = END_DATE
     else:
         end_date = convert_to_date_object(end_date)
 
-    # Get valid intervals for daily
+    # Get valid intervals for daily 获取时间间隔
     intervals = list(set(intervals) & set(DAILY_INTERVALS))
     print("Found {} symbols".format(num_symbols))
 
@@ -98,9 +98,10 @@ def download_daily_klines(trading_type: str, symbols: list, num_symbols: int, in
             for date in dates:
                 current_date = convert_to_date_object(date)
                 if current_date >= start_date and current_date <= end_date:
+                    # 拼接url 'data/futures/um/daily/klines/BTCUSDT/1m/'
                     path = get_path(trading_type, "klines", "daily", symbol, interval)
                     file_name = "{}-{}-{}.zip".format(symbol.upper(), interval, date)
-                    download_file(path, file_name, date_range, folder)
+                    download_file(path, file_name, date_range, folder)  # 下载文件
 
                     if checksum == 1:
                         checksum_path = get_path(trading_type, "klines", "daily", symbol, interval)
@@ -114,7 +115,7 @@ if __name__ == "__main__":
     parser = get_parser('klines')
     args = parser.parse_args(sys.argv[1:])
 
-    if not args.symbols:
+    if not args.symbols:  # 无交易对则，获取所有品种
         print("fetching all symbols from exchange")
         symbols = get_all_symbols(args.type)
         num_symbols = len(symbols)

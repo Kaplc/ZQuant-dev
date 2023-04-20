@@ -17,6 +17,7 @@ def get_destination_dir(file_url, folder=None):
 
 
 def get_download_url(file_url):
+    """拼接下载地址"""
     return "{}{}".format(BASE_URL, file_url)
 
 
@@ -31,31 +32,34 @@ def get_all_symbols(type):
 
 
 def download_file(base_path, file_name, date_range=None, folder=None):
+    """下载"""
     download_path = "{}{}".format(base_path, file_name)
+    # 拼接保存路径文件路径
     if folder:
         base_path = os.path.join(folder, base_path)
     if date_range:
         date_range = date_range.replace(" ", "_")
         base_path = os.path.join(base_path, date_range)
+    # 拼接绝对路径
     save_path = get_destination_dir(os.path.join(base_path, file_name), folder)
-
+    # 检查文件存在
     if os.path.exists(save_path):
         print("\nfile already exists! {}".format(save_path))
         return
 
-    # make the directory
+    # make the directory 创建目录
     if not os.path.exists(base_path):
         Path(get_destination_dir(base_path)).mkdir(parents=True, exist_ok=True)
 
     try:
-        download_url = get_download_url(download_path)
-        dl_file = urllib.request.urlopen(download_url)
+        download_url = get_download_url(download_path)  # 拼接下载地址
+        dl_file = urllib.request.urlopen(download_url)  # 发送请求
         length = dl_file.getheader('content-length')
         if length:
             length = int(length)
             blocksize = max(4096, length // 100)
 
-        with open(save_path, 'wb') as out_file:
+        with open(save_path, 'wb') as out_file:  # 写入文件
             dl_progress = 0
             print("\nFile Download: {}".format(save_path))
             while True:
@@ -74,6 +78,7 @@ def download_file(base_path, file_name, date_range=None, folder=None):
 
 
 def convert_to_date_object(d):
+    """转成日期对象"""
     year, month, day = [int(x) for x in d.split('-')]
     date_obj = date(year, month, day)
     return date_obj
@@ -112,6 +117,7 @@ def raise_arg_error(msg):
 
 
 def get_path(trading_type, market_data_type, time_period, symbol, interval=None):
+    """拼接url"""
     trading_type_path = 'data/spot'
     if trading_type != 'spot':
         trading_type_path = f'data/futures/{trading_type}'
