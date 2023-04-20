@@ -76,21 +76,25 @@ class API(object):
         return
 
     def query(self, url_path, payload=None):
+        """发送请求返回响应"""
         return self.send_request("GET", url_path, payload=payload)
 
     def limit_request(self, http_method, url_path, payload=None):
-        """limit request is for those endpoints require API key in the header"""
+        """
+        limit request is for those endpoints require API key in the header
+        调用那些需要在请求头中包含 API 密钥的接口
+        """
 
-        check_required_parameter(self.api_key, "api_key")
-        return self.send_request(http_method, url_path, payload=payload)
+        check_required_parameter(self.api_key, "api_key")  # 检查是否设置了 API 密钥
+        return self.send_request(http_method, url_path, payload=payload)  # 发送请求返回data
 
     def sign_request(self, http_method, url_path, payload=None):
         if payload is None:
             payload = {}
-        payload["timestamp"] = get_timestamp()
-        query_string = self._prepare_params(payload)
+        payload["timestamp"] = get_timestamp() # 生成毫秒时间戳
+        query_string = self._prepare_params(payload)  # 编码转换 %40 <=> @
         payload["signature"] = self._get_sign(query_string)
-        return self.send_request(http_method, url_path, payload)
+        return self.send_request(http_method, url_path, payload) # 发送请求返回data
 
     def limited_encoded_sign_request(self, http_method, url_path, payload=None):
         """This is used for some endpoints has special symbol in the url.
@@ -111,7 +115,7 @@ class API(object):
         return self.send_request(http_method, url_path)
 
     def send_request(self, http_method, url_path, payload=None):
-        """发送请求"""
+        """发送请求并接受响应"""
         if payload is None:
             payload = {}
         url = self.base_url + url_path
@@ -124,17 +128,17 @@ class API(object):
                 "proxies": self.proxies,
             }
         )
-        response = self._dispatch_request(http_method)(**params)  # 创建response对象
+        response = self._dispatch_request(http_method)(**params)  # 发送请求返回response对象
         self._logger.debug("raw response from server:" + response.text)
-        self._handle_exception(response)
+        self._handle_exception(response)  # 响应状态码的处理
 
         try:
             data = response.json()
         except ValueError:
             data = response.text
-        result = {}
+        result = {}  # 构建空字典
 
-        if self.show_limit_usage:
+        if self.show_limit_usage:  # 提取usage到空字典
             limit_usage = {}
             for key in response.headers.keys():
                 key = key.lower()
@@ -146,13 +150,13 @@ class API(object):
                     limit_usage[key] = response.headers[key]
             result["limit_usage"] = limit_usage
 
-        if self.show_header:
+        if self.show_header:  # 提取响应头
             result["header"] = response.headers
 
-        if len(result) != 0:
+        if len(result) != 0:  # 提取data
             result["data"] = data
             return result
-
+        # 不需要提取数据直接返回
         return data
 
     def _prepare_params(self, params):
@@ -171,7 +175,7 @@ class API(object):
             "DELETE": self.session.delete,
             "PUT": self.session.put,
             "POST": self.session.post,
-        }.get(http_method, "GET")  # 无对应默认返回"GET": self.session.get
+        }.get(http_method, "GET")  # 无对应默认使用"GET"发送请求并返回response
 
     def _handle_exception(self, response):
         """请求响应状态码的处理"""

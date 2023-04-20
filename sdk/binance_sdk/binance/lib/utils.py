@@ -22,6 +22,7 @@ def cleanNoneValue(d) -> dict:
 
 
 def check_required_parameter(value, name):
+    """检查是否设置api秘钥"""
     if not value and value != 0:
         raise ParameterRequiredError([name])
 
@@ -49,6 +50,7 @@ def check_type_parameter(value, name, data_type):
 
 
 def get_timestamp():
+    """生成毫秒时间戳"""
     return int(time.time() * 1000)
 
 
