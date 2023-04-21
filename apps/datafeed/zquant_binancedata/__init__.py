@@ -1,0 +1,1 @@
+from .binance_datafeed import BinanceDatafeed as Datafeed

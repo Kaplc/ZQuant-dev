@@ -24,7 +24,7 @@ SETTINGS: Dict[str, Any] = {
     "email.sender": "",
     "email.receiver": "",
     # 服务器数据服务配置
-    "datafeed.name": "zquant_biandata",
+    "datafeed.name": "zquant_binancedata",
     "datafeed.username": "zzy",
     "datafeed.password": "123456",
     # 本地数据库配置

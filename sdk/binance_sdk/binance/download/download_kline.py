@@ -4,15 +4,16 @@
   script to download klines.
   set the absolute path destination folder for STORE_DIRECTORY, and run
 
-  e.g. STORE_DIRECTORY=/data/ ./download-kline.py
+  e.g. STORE_DIRECTORY=/data/ ./download_kline.py
     下载K线
 """
 import sys
 from datetime import *
 import pandas as pd
-from enums import *
-from utility import download_file, get_all_symbols, get_parser, get_start_end_date_objects, convert_to_date_object, \
-    get_path
+from sdk.binance_sdk.binance.download.enums import *
+from sdk.binance_sdk.binance.download.utility import download_file, get_all_symbols, get_parser, \
+    get_start_end_date_objects, convert_to_date_object, \
+    get_path, get_dates
 
 
 def download_monthly_klines(trading_type, symbols, num_symbols, intervals, years, months, start_date, end_date, folder,
@@ -56,12 +57,18 @@ def download_monthly_klines(trading_type, symbols, num_symbols, intervals, years
         current += 1
 
 
-def download_daily_klines(trading_type: str, symbols: list, num_symbols: int, intervals: list, dates: list,
-                          start_date: str, end_date: str, folder,
-                          checksum: int):
+def download_daily_klines(trading_type: str = None,
+                          symbols: list = None,
+                          num_symbols: int = None,
+                          intervals: list = None,
+                          dates: list = None,
+                          start_date: str = None,
+                          end_date: str = None,
+                          folder=None,
+                          checksum: int = None):
     """
     下载日内K线
-    :param trading_type: 'um'           - 交易类型 (spot/um(币本位)/cm(U本位))
+    :param trading_type: 'um'           - 交易类型 (spot/um(BTCUSDT)/cm（BTCUSD))
     :param symbols: ['BTCUSDT',...]     - 交易对符号 (ETHUSDT BTCUSDT BNBBUSD...)
     :param num_symbols: 224             - 交易对数量 get_all_symbols()获取
     :param intervals: ['1m',...]        - K线时间间隔 (1s,1m,3m,5m,15m,30m,1h,2h,4h,6h,8h,12h,1d,3d,1w,1mo)
@@ -72,10 +79,22 @@ def download_daily_klines(trading_type: str, symbols: list, num_symbols: int, in
     :param checksum: 0                  - 是否下载校验
     :return:None
     """
+    # 获取num_symbols
+    if not num_symbols:
+        num_symbols = get_all_symbols(trading_type)
+
+    # 获取dates最早时间2020-1-1
+    if not dates:
+        dates = get_dates()
+
     current = 0
     date_range = None
 
     if start_date and end_date:
+        # start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
+        # if start_date_obj < datetime(2021, 3, 1) and intervals[0] == '1m':
+        #     print("超过最早时间已将开始时间设置为2021/03/01")
+        #     start_date = '2021-03-01'
         date_range = start_date + " " + end_date
 
     if not start_date:

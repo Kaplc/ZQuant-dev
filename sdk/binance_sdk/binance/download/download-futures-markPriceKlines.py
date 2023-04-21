@@ -4,7 +4,7 @@
   script to download markPriceKlines.
   set the absoluate path destination folder for STORE_DIRECTORY, and run
 
-  e.g. STORE_DIRECTORY=/data/ ./download-kline.py
+  e.g. STORE_DIRECTORY=/data/ ./download_kline.py
     期货K线
 """
 import sys

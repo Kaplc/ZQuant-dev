@@ -4,7 +4,18 @@ from pathlib import Path
 from datetime import *
 import urllib.request
 from argparse import ArgumentParser, RawTextHelpFormatter, ArgumentTypeError
-from enums import *
+from sdk.binance_sdk.binance.download.enums import *
+import pandas as pd
+
+
+def get_dates():
+    """获取日期列表"""
+    period = convert_to_date_object(datetime.today().strftime('%Y-%m-%d')) - convert_to_date_object(
+        PERIOD_START_DATE)
+    dates = pd.date_range(end=datetime.today(), periods=period.days + 1).to_pydatetime().tolist()
+    dates = [date.strftime("%Y-%m-%d") for date in dates]
+
+    return dates
 
 
 def get_destination_dir(file_url, folder=None):

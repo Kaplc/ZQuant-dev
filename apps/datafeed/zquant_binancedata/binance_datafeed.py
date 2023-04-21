@@ -1,13 +1,5 @@
-from datetime import datetime, timedelta
 from typing import Dict, List, Set, Optional, Callable
-
 from numpy import ndarray
-from pandas import DataFrame
-from rqdatac import init
-from rqdatac.services.get_price import get_price
-from rqdatac.services.future import get_dominant_price
-from rqdatac.services.basic import all_instruments
-from rqdatac.share.errors import RQDataError
 
 from core.trader.setting import SETTINGS
 from core.trader.constant import Exchange, Interval
@@ -15,6 +7,9 @@ from core.trader.object import BarData, TickData, HistoryRequest
 from core.trader.utility import round_to, ZoneInfo
 from core.trader.datafeed import BaseDatafeed
 
+from sdk.binance_sdk.binance.download.download_kline import download_daily_klines
+
+from .utility import req_converter
 
 class BinanceDatafeed(BaseDatafeed):
     """binance数据服务接口"""
@@ -33,16 +28,17 @@ class BinanceDatafeed(BaseDatafeed):
 
     def query_bar_history(self, req: HistoryRequest, output: Callable = print) -> Optional[List[BarData]]:
         """查询K线数据"""
-        pass
+        req = req_converter(req)
+        download_daily_klines(
+            trading_type=req.trading_type,
+            symbols=req.symbols,
+            intervals=req.intervals,
+            start_date=req.start_date,
+            end_date=req.end_date
+        )  # binanceSDK下载历史行情
 
-    def _query_bar_history(self, req: HistoryRequest, output: Callable = print) -> Optional[List[BarData]]:
-        """查询K线数据"""
         pass
 
     def query_tick_history(self, req: HistoryRequest, output: Callable = print) -> Optional[List[TickData]]:
         """查询Tick数据"""
-        pass
-
-    def _query_dominant_history(self, req: HistoryRequest, output: Callable = print) -> Optional[List[BarData]]:
-        """查询期货主力K线数据"""
         pass
