@@ -129,7 +129,9 @@ def raise_arg_error(msg):
 
 def get_path(trading_type, market_data_type, time_period, symbol, interval=None):
     """拼接url"""
+
     trading_type_path = 'data/spot'
+
     if trading_type != 'spot':
         trading_type_path = f'data/futures/{trading_type}'
     if interval is not None:

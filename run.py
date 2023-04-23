@@ -1,3 +1,5 @@
+import os
+
 from core.event import EventEngine
 from core.trader.engine import MainEngine
 from core.trader.ui import MainWindow, create_qapp
@@ -7,6 +9,7 @@ from apps.database.vnpy_datamanager import DataManagerApp
 
 def main():
     """"""
+    # print(os.getcwd())
     qapp = create_qapp()
 
     event_engine = EventEngine()
@@ -27,3 +30,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
