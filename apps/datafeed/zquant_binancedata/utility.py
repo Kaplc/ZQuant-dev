@@ -28,10 +28,10 @@ def req_converter(req):
     return req
 
 
-def unzip_to_csv():
+def unzip_to_csv(path):
     """解压binanceK线zip"""
     # 指定待解压的文件夹路径
-    folder_path = '/path/to/zip/files/'
+    folder_path = path
 
     # 获取文件夹中的所有文件
     files = os.listdir(folder_path)

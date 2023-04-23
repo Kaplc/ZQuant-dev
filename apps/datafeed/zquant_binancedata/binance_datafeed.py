@@ -10,7 +10,7 @@ from core.trader.datafeed import BaseDatafeed
 
 from sdk.binance_sdk.binance.download.download_kline import download_daily_klines
 
-from .utility import req_converter
+from .utility import req_converter, unzip_to_csv
 
 
 class BinanceDatafeed(BaseDatafeed):
@@ -32,7 +32,7 @@ class BinanceDatafeed(BaseDatafeed):
         """查询K线数据"""
         req = req_converter(req)
         save_path = os.path.dirname(os.path.abspath(__file__))
-        download_daily_klines(
+        unzip_path = download_daily_klines(
             trading_type=req.trading_type,
             symbols=req.symbols,
             intervals=req.intervals,
@@ -40,7 +40,7 @@ class BinanceDatafeed(BaseDatafeed):
             end_date=req.end_date,
             folder=save_path
         )  # binanceSDK下载历史行情
-
+        unzip_to_csv(unzip_path + '/')
         pass
 
     def query_tick_history(self, req: HistoryRequest, output: Callable = print) -> Optional[List[TickData]]:

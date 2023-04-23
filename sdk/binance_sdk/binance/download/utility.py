@@ -82,10 +82,10 @@ def download_file(base_path, file_name, date_range=None, folder=None):
                 done = int(50 * dl_progress / length)
                 sys.stdout.write("\r[%s%s]" % ('#' * done, '.' * (50 - done)))
                 sys.stdout.flush()
-
+        return base_path  # 返回保存目录
     except urllib.error.HTTPError:
         print("\nFile not found: {}".format(download_url))
-        pass
+        return base_path
 
 
 def convert_to_date_object(d):

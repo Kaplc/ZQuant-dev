@@ -120,7 +120,7 @@ def download_daily_klines(trading_type: str = None,
                     # 拼接url 'data/futures/um/daily/klines/BTCUSDT/1m/'
                     path = get_path(trading_type, "klines", "daily", symbol, interval)
                     file_name = "{}-{}-{}.zip".format(symbol.upper(), interval, date)
-                    download_file(path, file_name, date_range, folder)  # 下载文件
+                    unzip_path = download_file(path, file_name, date_range, folder)  # 下载文件
 
                     if checksum == 1:
                         checksum_path = get_path(trading_type, "klines", "daily", symbol, interval)
@@ -128,6 +128,8 @@ def download_daily_klines(trading_type: str = None,
                         download_file(checksum_path, checksum_file_name, date_range, folder)
 
         current += 1
+
+    return unzip_path  # 返回保存目录=解压地址
 
 
 if __name__ == "__main__":
