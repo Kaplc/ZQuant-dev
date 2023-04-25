@@ -32,13 +32,17 @@ def get_download_url(file_url):
     return "{}{}".format(BASE_URL, file_url)
 
 
-def get_all_symbols(type):
-    if type == 'um':
-        response = urllib.request.urlopen("https://fapi.binance.com/fapi/v1/exchangeInfo").read()
-    elif type == 'cm':
-        response = urllib.request.urlopen("https://dapi.binance.com/dapi/v1/exchangeInfo").read()
-    else:
-        response = urllib.request.urlopen("https://api.binance.com/api/v3/exchangeInfo").read()
+def get_all_symbols(type) -> list:
+    try:
+        if type == 'um':
+            response = urllib.request.urlopen("https://fapi.binance.com/fapi/v1/exchangeInfo").read()
+        elif type == 'cm':
+            response = urllib.request.urlopen("https://dapi.binance.com/dapi/v1/exchangeInfo").read()
+        else:
+            response = urllib.request.urlopen("https://api.binance.com/api/v3/exchangeInfo").read()
+    except:
+        print('网络异常')
+        return [0]
     return list(map(lambda symbol: symbol['symbol'], json.loads(response)['symbols']))
 
 

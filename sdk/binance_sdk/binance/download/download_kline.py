@@ -82,7 +82,8 @@ def download_daily_klines(trading_type: str = None,
     # 获取num_symbols
     if not num_symbols:
         num_symbols = get_all_symbols(trading_type)
-
+        if num_symbols == [0]:
+            return None
     # 获取dates最早时间2020-1-1
     if not dates:
         dates = get_dates()

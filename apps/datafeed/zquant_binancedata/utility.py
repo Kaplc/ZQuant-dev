@@ -41,7 +41,6 @@ def import_data_from_csv(
 
             reader: csv.DictReader = csv.DictReader(buf, delimiter=",")
 
-
             start: datetime = None
             count: int = 0
             tz = ZoneInfo(tz_name)
@@ -78,7 +77,6 @@ def import_data_from_csv(
                 count += 1
                 if not start:
                     start = bar.datetime
-
 
             # 导入数据库
             # self.database.save_bar_data(bars)

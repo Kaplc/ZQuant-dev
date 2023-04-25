@@ -423,8 +423,8 @@ class MysqlDatabase(BaseDatabase):
     def get_bar_overview(self) -> List[BarOverview]:
         """查询数据库中的K线汇总信息"""
         # 如果已有K线，但缺失汇总信息，则执行初始化
-        data_count: int = DbBarData.select().count()
-        overview_count: int = DbBarOverview.select().count()
+        data_count: int = DbBarData.select().count()  # 获取所有K线数量
+        overview_count: int = DbBarOverview.select().count()  # 交易对数量
         if data_count and not overview_count:
             self.init_bar_overview()
 

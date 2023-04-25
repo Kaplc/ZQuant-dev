@@ -42,6 +42,9 @@ class BinanceDatafeed(BaseDatafeed):
             folder=save_path
         )  # binanceSDK下载历史行情
 
+        if unzip_path == None:
+            output('网络可能出现异常!')
+            return []
         # 批量解压zip成csv
         unzip_to_csv(unzip_path + '/')
         # 批量加载csv

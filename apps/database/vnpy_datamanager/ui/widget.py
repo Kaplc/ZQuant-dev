@@ -365,7 +365,7 @@ class ManagerWidget(QtWidgets.QWidget):
         )
 
     def update_data(self) -> None:
-        """"""
+        """点击更新数据"""
         overviews: List[BarOverview] = self.engine.get_bar_overview()
         total: int = len(overviews)
         count: int = 0
