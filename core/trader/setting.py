@@ -9,6 +9,9 @@ from tzlocal import get_localzone_name
 from .utility import load_json
 
 SETTINGS: Dict[str, Any] = {
+    # 时区
+    'timezone': 'Asia/Shanghai',
+    # 字体
     "font.family": "微软雅黑",
     "font.size": 12,
     # 日志器配置
@@ -30,7 +33,7 @@ SETTINGS: Dict[str, Any] = {
     # 本地数据库配置
     "database.timezone": get_localzone_name(),
     "database.name": "mysql",
-    "database.database": "vnpy_test",
+    "database.database": "zquant_dev",
     "database.host": "127.0.01",
     "database.port": 3306,
     "database.user": "root",

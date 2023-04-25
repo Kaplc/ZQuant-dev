@@ -43,7 +43,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_engine: MainEngine = main_engine
         self.event_engine: EventEngine = event_engine
 
-        self.window_title: str = f"VeighNa Trader 社区版 - {core.__version__}   [{TRADER_DIR}]"
+        self.window_title: str = f"ZQuant_dev - {core.__version__}   [{TRADER_DIR}]"
 
         self.widgets: Dict[str, QtWidgets.QWidget] = {}
         self.monitors: Dict[str, BaseMonitor] = {}

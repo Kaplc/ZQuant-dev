@@ -11,7 +11,7 @@ from peewee import (
     ModelSelect,
     ModelDelete,
     chunked,
-    fn
+    fn, DoubleField
 )
 
 from core.trader.constant import Exchange, Interval
@@ -53,8 +53,8 @@ class DbBarData(Model):
     datetime: datetime = DateTimeField()
     interval: str = CharField()
 
-    volume: float = FloatField()
-    turnover: float = FloatField()
+    volume: float = DoubleField()
+    turnover: float = DoubleField()
     open_interest: float = FloatField()
     open_price: float = FloatField()
     high_price: float = FloatField()
@@ -76,8 +76,8 @@ class DbTickData(Model):
     datetime: datetime = DateTimeMillisecondField()
 
     name: str = CharField()
-    volume: float = FloatField()
-    turnover: float = FloatField()
+    volume: float = DoubleField()
+    turnover: float = DoubleField()
     open_interest: float = FloatField()
     last_price: float = FloatField()
     last_volume: float = FloatField()
