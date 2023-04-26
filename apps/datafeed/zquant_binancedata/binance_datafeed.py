@@ -33,23 +33,24 @@ class BinanceDatafeed(BaseDatafeed):
         """查询K线数据"""
         converted_req = req_converter(req)
         save_path = os.path.dirname(os.path.abspath(__file__))
+        # binanceSDK下载历史行情
         unzip_path = download_daily_klines(
             trading_type=converted_req.trading_type,
             symbols=converted_req.symbols,
             intervals=converted_req.intervals,
             start_date=converted_req.start_date,
             end_date=converted_req.end_date,
-            folder=save_path
-        )  # binanceSDK下载历史行情
+            folder=save_path,
+        )
 
-        if unzip_path == None:
+        if unzip_path:
             output('网络可能出现异常!')
             return []
         # 批量解压zip成csv
-        unzip_to_csv(unzip_path + '/')
+        unzip_to_csv(unzip_path, output)
         # 批量加载csv
         data: List[BarData] = import_data_from_csv(
-            folder_path=unzip_path + '/',
+            folder_path=unzip_path,
             symbol=req.symbol,
             exchange=req.exchange,
             interval=req.interval,
@@ -69,3 +70,5 @@ class BinanceDatafeed(BaseDatafeed):
     def query_tick_history(self, req: HistoryRequest, output: Callable = print) -> Optional[List[TickData]]:
         """查询Tick数据"""
         pass
+
+    

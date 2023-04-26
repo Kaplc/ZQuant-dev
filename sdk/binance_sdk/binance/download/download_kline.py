@@ -9,6 +9,8 @@
 """
 import sys
 from datetime import *
+from typing import Callable
+
 import pandas as pd
 from sdk.binance_sdk.binance.download.enums import *
 from sdk.binance_sdk.binance.download.utility import download_file, get_all_symbols, get_parser, \
@@ -65,7 +67,7 @@ def download_daily_klines(trading_type: str = None,
                           start_date: str = None,
                           end_date: str = None,
                           folder=None,
-                          checksum: int = None):
+                          checksum: int = None,) -> str:
     """
     下载日内K线
     :param trading_type: 'um'           - 交易类型 (spot/um(BTCUSDT)/cm（BTCUSD))
@@ -92,10 +94,6 @@ def download_daily_klines(trading_type: str = None,
     date_range = None
 
     if start_date and end_date:
-        # start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
-        # if start_date_obj < datetime(2021, 3, 1) and intervals[0] == '1m':
-        #     print("超过最早时间已将开始时间设置为2021/03/01")
-        #     start_date = '2021-03-01'
         date_range = start_date + " " + end_date
 
     if not start_date:

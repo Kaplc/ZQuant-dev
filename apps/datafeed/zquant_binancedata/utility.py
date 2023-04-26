@@ -10,6 +10,15 @@ from core.trader.constant import Exchange, Interval
 from core.trader.object import BarData
 
 
+def parse_file_name(file_name):
+    """以日期时间排序key"""
+    # 获取日期部分，并解析为日期时间对象
+    split_list = file_name.split(".")[0].split("-")
+    dt_str = split_list[2] + '-' + split_list[3] + '-' + split_list[4]
+    dt = datetime.strptime(dt_str, "%Y-%m-%d")
+    return dt
+
+
 def import_data_from_csv(
         folder_path: str,
         symbol: str,
@@ -30,10 +39,11 @@ def import_data_from_csv(
     # 指定待加载csv的文件夹路径
     # 获取文件夹中的所有文件
     files = os.listdir(folder_path)
+    sorted_files = sorted(files, key=parse_file_name)  # 文件列表并降序
 
     data: List[BarData] = []
     # 循环处理每个文件
-    for file in files:
+    for file in sorted_files:
         file_path = os.path.join(folder_path, file)
         if file.endswith('.csv'):  # 只处理后缀名为 .csv 的文件
             with open(file_path, "rt") as f:
@@ -127,29 +137,8 @@ def req_converter(req):
     return req
 
 
-def unzip_to_csv(path):
-    """解压binanceK线zip"""
-    # 指定待解压的文件夹路径
-    folder_path = path
 
-    # 获取文件夹中的所有文件
-    files = os.listdir(folder_path)
 
-    # 循环处理每个文件
-    for file in files:
-
-        file_path = os.path.join(folder_path, file)
-        if file.endswith('.zip'):  # 只处理后缀名为 .zip 的文件
-            if file.split('.')[0] + '.csv' in files:
-                continue
-
-            try:
-                with zipfile.ZipFile(file_path, 'r') as zip_ref:
-                    zip_ref.extractall(folder_path)  # 解压到同一目录下
-                print(f'解压文件 {file} 完成.')
-            except:
-                print(f'解压文件 {file} 失败！请重新点击下载.')
-                pass
 
 
 if __name__ == '__main__':

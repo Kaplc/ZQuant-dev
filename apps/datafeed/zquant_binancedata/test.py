@@ -8,6 +8,12 @@ from core.trader.object import BarData
 # from .utility import csv_time_converter
 from sdk.binance_sdk.binance.download.download_kline import download_daily_klines
 
+def parse_file_name(file_name):
+    """以日期时间排序key"""
+    # 获取日期部分，并解析为日期时间对象
+    dt_str = file_name.split("-")[2, 3, 4]  # .split(".")[0]
+    dt = datetime.strptime(dt_str, "%Y-%m-%d")
+    return dt
 
 def csv_time_converter(sum_second):
     """
@@ -97,39 +103,4 @@ def import_data_from_csv(
 
 if __name__ == '__main__':
     # csv_time_converter()
-    import_data_from_csv(
-        # file_path='/home/kaplc/PycharmProjects/ZQuant_dev/examples/demo/csv/IC888.csv',
-        file_path="/home/kaplc/PycharmProjects/ZQuant_dev/apps/datafeed/zquant_binancedata/data/futures/um/daily/klines/BTCUSDT/1m/2023-04-20_2023-04-23/BTCUSDT-1m-2023-04-20.csv",
-        symbol='BTCUSDT',
-        exchange=Exchange.BINANCE,
-        interval=Interval.MINUTE,
-        tz_name='Asia/Shanghai',
-        datetime_head='open_time',
-        open_head='open',
-        high_head='high',
-        low_head='low',
-        close_head='close',
-        volume_head='volume',
-        turnover_head='quote_volume',
-        open_interest_head='open_interest',
-        datetime_format='%Y-%m-%d %H:%M:%S'
-    )
-
-    # import_data_from_csv(
-    #     file_path='/home/kaplc/PycharmProjects/ZQuant_dev/examples/demo/csv/IC888.csv',
-    #     # file_path="/home/kaplc/PycharmProjects/ZQuant_dev/apps/datafeed/zquant_binancedata/data/futures/um/daily/klines/BTCUSDT/1m/2023-04-20_2023-04-23/BTCUSDT-1m-2023-04-20.csv",
-    #     symbol='BTCUSDT',
-    #     exchange=Exchange.BINANCE,
-    #     interval=Interval.MINUTE,
-    #     tz_name='Asia/Shanghai',
-    #     datetime_head='datetime',
-    #     open_head='open',
-    #     high_head='high',
-    #     low_head='low',
-    #     close_head='close',
-    #     volume_head='volume',
-    #     turnover_head='turnover',
-    #     open_interest_head='open_interest',
-    #     datetime_format='%Y-%m-%d %H:%M:%S'
-    # )
-    pass
+    parse_file_name()

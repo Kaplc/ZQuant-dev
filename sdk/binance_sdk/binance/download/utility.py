@@ -54,7 +54,7 @@ def download_file(base_path, file_name, date_range=None, folder=None):
         base_path = os.path.join(folder, base_path)
     if date_range:
         date_range = date_range.replace(" ", "_")
-        base_path = os.path.join(base_path, date_range)
+        # base_path = os.path.join(base_path, date_range)
     # 拼接绝对路径
     save_path = get_destination_dir(os.path.join(base_path, file_name), folder)
     # 检查文件存在
