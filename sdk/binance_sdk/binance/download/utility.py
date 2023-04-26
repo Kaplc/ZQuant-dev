@@ -42,7 +42,7 @@ def get_all_symbols(type) -> list:
             response = urllib.request.urlopen("https://api.binance.com/api/v3/exchangeInfo").read()
     except:
         print('网络异常')
-        return [0]
+        return None
     return list(map(lambda symbol: symbol['symbol'], json.loads(response)['symbols']))
 
 
@@ -87,7 +87,7 @@ def download_file(base_path, file_name, date_range=None, folder=None):
                 sys.stdout.write("\r[%s%s]" % ('#' * done, '.' * (50 - done)))
                 sys.stdout.flush()
         return base_path  # 返回保存目录
-    except urllib.error.HTTPError:
+    except:
         print("\nFile not found: {}".format(download_url))
         return base_path
 
