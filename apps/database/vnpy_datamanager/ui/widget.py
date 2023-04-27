@@ -468,7 +468,7 @@ class DateRangeDialog(QtWidgets.QDialog):
 
 
 class ImportDialog(QtWidgets.QDialog):
-    """"""
+    """CSV文件导入数据"""
 
     def __init__(self, parent=None) -> None:
         """"""

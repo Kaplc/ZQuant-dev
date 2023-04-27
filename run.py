@@ -5,6 +5,7 @@ from core.trader.engine import MainEngine
 from core.trader.ui import MainWindow, create_qapp
 
 from apps.database.vnpy_datamanager import DataManagerApp
+from apps.chartwizard import ChartWizardApp
 
 
 def main():
@@ -21,7 +22,7 @@ def main():
 
     # 添加子应用
     main_engine.add_app(DataManagerApp)
-
+    main_engine.add_app(ChartWizardApp)
     # ui
     main_window = MainWindow(main_engine, event_engine)
     main_window.showMaximized()
@@ -30,4 +31,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

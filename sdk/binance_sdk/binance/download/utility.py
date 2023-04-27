@@ -41,7 +41,7 @@ def get_all_symbols(type) -> list:
         else:
             response = urllib.request.urlopen("https://api.binance.com/api/v3/exchangeInfo").read()
     except:
-        print('网络异常')
+        print('获取交易对列表时网络异常')
         return None
     return list(map(lambda symbol: symbol['symbol'], json.loads(response)['symbols']))
 
