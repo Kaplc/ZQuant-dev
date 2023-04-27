@@ -77,18 +77,23 @@ class ChartWizardWidget(QtWidgets.QWidget):
         """"""
         # Filter invalid vt_symbol
         vt_symbol: str = self.symbol_line.text()
+        # 添加显示日期参数，不填默认5天
+        date_range = vt_symbol.split('.')[2]
+        if not date_range:
+            date_range = 5
+        vt_symbol = vt_symbol.split('.')[0] + '.' + vt_symbol.split('.')[1]
         if not vt_symbol:
             return
 
         if vt_symbol in self.charts:
             return
 
-        if "LOCAL" not in vt_symbol:
-            contract: Optional[ContractData] = self.main_engine.get_contract(vt_symbol)
-            if not contract:
-                return
+        # if "LOCAL" not in vt_symbol:
+        #     contract: Optional[ContractData] = self.main_engine.get_contract(vt_symbol)
+        #     if not contract:
+        #         return
 
-        # Create new chart
+        # Create new chart 创建新图表
         self.bgs[vt_symbol] = BarGenerator(self.on_bar)
 
         chart: ChartWidget = self.create_chart()
@@ -96,9 +101,9 @@ class ChartWizardWidget(QtWidgets.QWidget):
 
         self.tab.addTab(chart, vt_symbol)
 
-        # Query history data
+        # Query history data 查询历史数据
         end: datetime = datetime.now(ZoneInfo(get_localzone_name()))
-        start: datetime = end - timedelta(days=5)
+        start: datetime = end - timedelta(days=int(date_range))
 
         self.chart_engine.query_history(
             vt_symbol,

@@ -406,6 +406,7 @@ class ChartCursor(QtCore.QObject):
     def _mouse_moved(self, evt: tuple) -> None:
         """
         Callback function when mouse is moved.
+        鼠标移动时的回调功能
         """
         if not self._manager.get_count():
             return

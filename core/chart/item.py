@@ -229,6 +229,7 @@ class CandleItem(ChartItem):
     def get_info_text(self, ix: int) -> str:
         """
         Get information text to show by cursor.
+        获取要通过光标显示的信息文本
         """
         bar: BarData = self._manager.get_bar(ix)
 
