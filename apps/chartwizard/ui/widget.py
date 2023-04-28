@@ -50,6 +50,7 @@ class ChartWizardWidget(QtWidgets.QWidget):
         hbox: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
         hbox.addWidget(QtWidgets.QLabel("本地代码"))
         hbox.addWidget(self.symbol_line)
+        self.symbol_line.setText("BTCUSDT.BINANCE-1m-(2023-4-20~2023-4-25)")  # 设置默认查询模板
         hbox.addWidget(self.button)
         hbox.addStretch()
 
@@ -78,16 +79,16 @@ class ChartWizardWidget(QtWidgets.QWidget):
         # 读取查询参数
         line_param: str = self.symbol_line.text()
 
-        # 添加显示日期参数，不填默认5天
         try:
             vt_symbol = line_param.split('-')[0]  # 获取交易对交易所
             interval = line_param.split('-')[1]  # 获取时间周期
             date_range = line_param.split('(')[1].split(')')[0]  # 获取日期范围
+
             end = datetime.strptime(date_range.split('~')[1], "%Y-%m-%d")
             start = datetime.strptime(date_range.split('~')[0], "%Y-%m-%d")
 
         except:
-
+            # 添加显示日期参数，不填默认5天
             end: datetime = datetime.now(ZoneInfo(get_localzone_name()))
             start: datetime = end - timedelta(days=5)
 
@@ -111,7 +112,6 @@ class ChartWizardWidget(QtWidgets.QWidget):
         self.tab.addTab(chart, vt_symbol)
 
         # Query history data 查询历史数据
-        # 'BTCUSDT.BINANCE-1m-(2023-4-20~2023-4-28)'
 
         self.chart_engine.query_history(
             vt_symbol,
