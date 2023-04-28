@@ -6,6 +6,8 @@ from core.trader.ui import MainWindow, create_qapp
 
 from apps.database.vnpy_datamanager import DataManagerApp
 from apps.chartwizard import ChartWizardApp
+from apps.vnpy_ctastrategy import CtaStrategyApp
+from apps.vnpy_ctabacktester import CtaBacktesterApp
 
 
 def main():
@@ -23,6 +25,8 @@ def main():
     # 添加子应用
     main_engine.add_app(DataManagerApp)
     main_engine.add_app(ChartWizardApp)
+    main_engine.add_app(CtaStrategyApp)
+    main_engine.add_app(CtaBacktesterApp)
     # ui
     main_window = MainWindow(main_engine, event_engine)
     main_window.showMaximized()

@@ -50,7 +50,6 @@ class ChartWizardWidget(QtWidgets.QWidget):
         hbox: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
         hbox.addWidget(QtWidgets.QLabel("本地代码"))
         hbox.addWidget(self.symbol_line)
-        self.symbol_line.setText("BTCUSDT.BINANCE-1m-(2023-4-20~2023-4-25)")  # 设置默认查询模板
         hbox.addWidget(self.button)
         hbox.addStretch()
 
@@ -59,6 +58,7 @@ class ChartWizardWidget(QtWidgets.QWidget):
         vbox.addWidget(self.tab)
 
         self.setLayout(vbox)
+        self.symbol_line.setText("BTCUSDT.BINANCE-1m-(2023-4-20~2023-4-25)")  # 设置默认查询模板
 
     def create_chart(self) -> ChartWidget:
         """"""
