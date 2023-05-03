@@ -203,7 +203,7 @@ class StrategyManager(QtWidgets.QFrame):
     """
 
     def __init__(
-        self, cta_manager: CtaManager, cta_engine: CtaEngine, data: dict
+            self, cta_manager: CtaManager, cta_engine: CtaEngine, data: dict
     ) -> None:
         """"""
         super(StrategyManager, self).__init__()
@@ -441,7 +441,7 @@ class SettingEditor(QtWidgets.QDialog):
     """
 
     def __init__(
-        self, parameters: dict, strategy_name: str = "", class_name: str = ""
+            self, parameters: dict, strategy_name: str = "", class_name: str = ""
     ) -> None:
         """"""
         super(SettingEditor, self).__init__()
