@@ -185,9 +185,10 @@ class MysqlDatabase(BaseDatabase):
 
         # 使用upsert操作将数据更新到数据库中
         with self.db.atomic():
+            print(f"正在更新到数据库，数据总量：{len(data)}")
             for c in chunked(data, 50):
                 DbBarData.insert_many(c).on_conflict_replace().execute()
-
+        print(f"更新完成，数据总量：{len(data)}")
         # 更新K线汇总数据
         overview: DbBarOverview = DbBarOverview.get_or_none(
             DbBarOverview.symbol == symbol,

@@ -60,7 +60,7 @@ def download_file(base_path, file_name, date_range=None, folder=None):
     # 检查文件存在
     if os.path.exists(save_path):
         print("\nfile already exists! {}".format(save_path))
-        return
+        return base_path
 
     # make the directory 创建目录
     if not os.path.exists(base_path):

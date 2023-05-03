@@ -89,6 +89,7 @@ class BinanceDatafeed(BaseDatafeed):
             datetime_format: str
     ) -> List[BarData]:
         """csv文件导入数据"""
+        print(f"正在读取csv.")
         # 指定待加载csv的文件夹路径
         # 获取文件夹中的所有文件
         files = os.listdir(folder_path)
@@ -99,6 +100,7 @@ class BinanceDatafeed(BaseDatafeed):
         for file in sorted_files:
             file_path = os.path.join(folder_path, file)
             if file.endswith('.csv'):  # 只处理后缀名为 .csv 的文件
+
                 with open(file_path, "rt") as f:
                     buf: list = [line.replace("\0", "") for line in f]
 
