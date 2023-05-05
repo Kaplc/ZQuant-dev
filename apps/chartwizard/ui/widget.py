@@ -82,6 +82,11 @@ class ChartWizardWidget(QtWidgets.QWidget):
         try:
             vt_symbol = line_param.split('-')[0]  # 获取交易对交易所
             interval = line_param.split('-')[1]  # 获取时间周期
+            # 时间周期获取Interval对象
+            for i in Interval:
+                if i.value == interval:
+                    interval = i
+
             date_range = line_param.split('(')[1].split(')')[0]  # 获取日期范围
 
             end = datetime.strptime(date_range.split('~')[1], "%Y-%m-%d")
@@ -112,10 +117,9 @@ class ChartWizardWidget(QtWidgets.QWidget):
         self.tab.addTab(chart, vt_symbol)
 
         # Query history data 查询历史数据
-
         self.chart_engine.query_history(
             vt_symbol,
-            Interval.MINUTE,
+            interval,
             start,
             end
         )
