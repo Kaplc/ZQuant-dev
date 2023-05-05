@@ -381,6 +381,7 @@ class ManagerWidget(QtWidgets.QWidget):
         dialog.setValue(0)
 
         for overview in overviews:
+
             if dialog.wasCanceled():
                 break
 
@@ -389,7 +390,7 @@ class ManagerWidget(QtWidgets.QWidget):
                 overview.exchange,
                 overview.interval,
                 overview.end,
-                self.output
+                self.output,
             )
             count += 1
             progress = int(round(count / total * 100, 0))

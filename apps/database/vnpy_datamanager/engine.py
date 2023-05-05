@@ -186,7 +186,7 @@ class ManagerEngine(BaseEngine):
             exchange: Exchange,
             interval: str,
             start: datetime,
-            output: Callable
+            output: Callable,
     ) -> int:
         """
         Query bar data from datafeed. 服务器下载K线数据

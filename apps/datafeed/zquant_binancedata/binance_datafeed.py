@@ -29,7 +29,8 @@ class BinanceDatafeed(BaseDatafeed):
         """初始化"""
         pass
 
-    def query_bar_history(self, req: HistoryRequest, output: Callable = print) -> Optional[List[BarData]]:
+    def query_bar_history(self, req: HistoryRequest, output: Callable = print) -> Optional[
+        List[BarData]]:
         """查询K线数据"""
         converted_req = self._req_converter(req)
         save_path = os.path.dirname(os.path.abspath(__file__))
@@ -46,8 +47,9 @@ class BinanceDatafeed(BaseDatafeed):
         if download_path is None:
             output('网络可能出现异常!')
             return []
+
         # 批量解压zip成csv
-        csv_path = self._unzip_to_csv(download_path, output)
+        csv_path = self._unzip_to_csv(download_path, req, output)
         # 批量加载csv
         data: List[BarData] = self._import_data_from_csv(
             folder_path=csv_path,
@@ -190,7 +192,7 @@ class BinanceDatafeed(BaseDatafeed):
 
         return req
 
-    def _unzip_to_csv(self, path, output):
+    def _unzip_to_csv(self, path, req, output):
         """解压binanceK线zip"""
         # 指定待解压的文件夹路径
         folder_path = path
@@ -212,5 +214,11 @@ class BinanceDatafeed(BaseDatafeed):
                     print(f'解压文件 {file} 完成.')
                 except Exception as e:
                     print(e)
-                    output(f' {file}已损坏，解压文件失败！请删除并重新点击下载.')
+                    output(f' {file}已损坏，解压文件失败！.')
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+                        print(f"{file} 删除成功, 正在尝试重新下载")
+                        self.query_bar_history(req, output)  # 重新调用下载
+                    else:
+                        print(f"{file} 不存在")
         return csv_path
