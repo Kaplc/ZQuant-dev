@@ -1,9 +1,11 @@
 import csv
 import zipfile
-from datetime import datetime, timedelta
 import os
+from datetime import datetime, timedelta
+from tqdm import tqdm
 from typing import Dict, List, Set, Optional, Callable
 from numpy import ndarray
+
 
 from core.trader import setting
 from core.trader.setting import SETTINGS
@@ -201,17 +203,15 @@ class BinanceDatafeed(BaseDatafeed):
         files = os.listdir(folder_path)
 
         # 循环处理每个文件
+        print("正在解压历史数据.")
         for file in files:
 
             file_path = os.path.join(folder_path, file)
             if file.endswith('.zip'):  # 只处理后缀名为 .zip 的文件
-                if file.split('.')[0] + '.csv' in files:
-                    continue
                 try:
                     with zipfile.ZipFile(file_path, 'r') as zip_ref:
                         csv_path = folder_path + 'csv'
-                        zip_ref.extractall(csv_path)  # 解压到同一目录下
-                    print(f'解压文件 {file} 完成.')
+                        zip_ref.extractall(csv_path)  # 解压到csv目录下
                 except Exception as e:
                     print(e)
                     output(f' {file}已损坏，解压文件失败！.')

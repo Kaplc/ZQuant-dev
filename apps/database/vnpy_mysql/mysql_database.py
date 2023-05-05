@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List
-
+from tqdm import tqdm
 from peewee import (
     AutoField,
     CharField,
@@ -185,9 +185,8 @@ class MysqlDatabase(BaseDatabase):
 
         # 使用upsert操作将数据更新到数据库中
         with self.db.atomic():
-            print(f"正在更新到数据库，数据总量：{len(data)}")
-            for c in chunked(data, 50):
-
+            print(f"\n正在更新{bar.symbol}到数据库，数据总量：{len(data)}")
+            for c in tqdm(chunked(data, 50), total=len(data)//50):
                 DbBarData.insert_many(c).on_conflict_replace().execute()
         print(f"更新完成，数据总量：{len(data)}")
         # 更新K线汇总数据
