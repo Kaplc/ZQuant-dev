@@ -6,7 +6,6 @@ from tqdm import tqdm
 from typing import Dict, List, Set, Optional, Callable
 from numpy import ndarray
 
-
 from core.trader import setting
 from core.trader.setting import SETTINGS
 from core.trader.constant import Exchange, Interval
@@ -93,20 +92,24 @@ class BinanceDatafeed(BaseDatafeed):
             datetime_format: str
     ) -> List[BarData]:
         """csv文件导入数据"""
+        # 定义表头
+        header = 'open_time,open,high,low,close,volume,close_time,quote_volume,count,taker_buy_volume,taker_buy_quote_volume,ignore\n'
         print(f"正在读取csv.")
-        # 指定待加载csv的文件夹路径
-        # 获取文件夹中的所有文件
-        files = os.listdir(folder_path)
+
+        files = os.listdir(folder_path)  # 获取csv的文件夹中的所有文件
         sorted_files = sorted(files, key=self._parse_file_name)  # 文件列表并降序
 
         data: List[BarData] = []
         # 循环处理每个文件
         for file in sorted_files:
             file_path = os.path.join(folder_path, file)
-            if file.endswith('.csv'):  # 只处理后缀名为 .csv 的文件
 
+            if file.endswith('.csv'):  # 只处理后缀名为 .csv 的文件
                 with open(file_path, "rt") as f:
                     buf: list = [line.replace("\0", "") for line in f]
+
+                if header != buf[0]:  # 无表头动态添加
+                    buf.insert(0, header)
 
                 reader: csv.DictReader = csv.DictReader(buf, delimiter=",")
 
