@@ -16,6 +16,8 @@ from sdk.binance_sdk.binance.download.enums import *
 from sdk.binance_sdk.binance.download.utility import download_file, get_all_symbols, get_parser, \
     get_start_end_date_objects, convert_to_date_object, \
     get_path, get_dates
+from core.trader.constant import Interval as ZQ_INTERVAL
+from .utility import interval_converter
 
 
 def download_monthly_klines(trading_type, symbols, num_symbols, intervals, years, months, start_date, end_date, folder,
@@ -67,7 +69,7 @@ def download_daily_klines(trading_type: str = None,
                           start_date: str = None,
                           end_date: str = None,
                           folder=None,
-                          checksum: int = None,) -> str:
+                          checksum: int = None, ) -> str:
     """
     下载日内K线
     :param trading_type: 'um'           - 交易类型 (spot/um(BTCUSDT)/cm（BTCUSD))
@@ -86,13 +88,37 @@ def download_daily_klines(trading_type: str = None,
         num_symbols = get_all_symbols(trading_type)
         if num_symbols is None:
             return None
-    # 获取dates最早时间2020-1-1
+
+    # 获取日期列表
     if not dates:
         dates = get_dates()
 
+    # Get valid intervals for daily 获取K线时间周期
+    intervals = interval_converter.get(intervals[0])
+    intervals = list(set(intervals) & set(INTERVALS))
+
+    # 截取符合时间周期的日期列表
+    if '1w' in intervals:  # 周线
+        new_dates = []
+        for date in dates:
+            new_date = convert_to_date_object(date)
+            if new_date.weekday() == 0:
+                new_dates.append(new_date.strftime('%Y-%m-%d'))
+
+        dates = new_dates
+
+    elif '1m' in intervals:  # 日线
+        new_dates = []
+        for date in dates:
+            new_date = convert_to_date_object(date)
+            if new_date.day == 1:
+                new_dates.append(new_date.strftime('%Y-%m-%d'))
+
+        dates = new_dates
+
     current = 0
     date_range = None
-
+    # 下载日期范围
     if start_date and end_date:
         date_range = start_date + " " + end_date
 
@@ -106,8 +132,6 @@ def download_daily_klines(trading_type: str = None,
     else:
         end_date = convert_to_date_object(end_date)
 
-    # Get valid intervals for daily 获取时间间隔
-    intervals = list(set(intervals) & set(DAILY_INTERVALS))
     print("Found {} symbols".format(num_symbols))
 
     for symbol in symbols:

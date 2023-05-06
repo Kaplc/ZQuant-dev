@@ -7,6 +7,13 @@ from argparse import ArgumentParser, RawTextHelpFormatter, ArgumentTypeError
 from sdk.binance_sdk.binance.download.enums import *
 import pandas as pd
 
+interval_converter = {
+    '1m': ['1m', ],
+    '1h': ['1h', ],
+    'd': ['1d', ],
+    'w': ['1w', ],
+}
+
 
 def get_dates():
     """获取日期列表"""
