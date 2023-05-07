@@ -285,6 +285,7 @@ class MysqlDatabase(BaseDatabase):
             end: datetime
     ) -> List[BarData]:
         """加载K线数据"""
+        print('正在通过mysql_database正在加载K线数据...')
         s: ModelSelect = (
             DbBarData.select().where(
                 (DbBarData.symbol == symbol)

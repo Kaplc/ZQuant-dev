@@ -117,7 +117,7 @@ def load_json(filename: str) -> dict:
 def save_json(filename: str, data: dict) -> None:
     """
     Save data into json file in temp path.
-    保持json到临时文件目录
+    保存json到临时文件目录
     """
     filepath: Path = get_file_path(filename)
     with open(filepath, mode="w+", encoding="UTF-8") as f:
@@ -212,7 +212,7 @@ class BarGenerator:
         self.window_bar: BarData = None  # 当前窗口K线数据
         self.on_window_bar: Callable = on_window_bar  # 窗口回调函数
 
-        self.last_tick: TickData = None  # 最近tick数据
+        self.last_tick: TickData = None  # 上一条tick数据
 
     def update_tick(self, tick: TickData) -> None:
         """

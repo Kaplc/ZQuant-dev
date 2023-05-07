@@ -146,7 +146,7 @@ class BacktestingEngine:
         )
 
     def load_data(self) -> None:
-        """"""
+        """加载回测K线"""
         self.output("开始加载历史数据")
 
         if not self.end:
@@ -156,9 +156,9 @@ class BacktestingEngine:
             self.output("起始日期必须小于结束日期")
             return
 
-        self.history_data.clear()       # Clear previously loaded history data
+        self.history_data.clear()       # Clear previously loaded history data 清除以前加载的历史数据
 
-        # Load 30 days of data each time and allow for progress update
+        # Load 30 days of data each time and allow for progress update 每次加载30天的数据，并允许进度更新
         total_days: int = (self.end - self.start).days
         progress_days: int = max(int(total_days / 10), 1)
         progress_delta: timedelta = timedelta(days=progress_days)
@@ -173,7 +173,7 @@ class BacktestingEngine:
             self.output(f"加载进度：{progress_bar} [{progress:.0%}]")
 
             end: datetime = min(end, self.end)  # Make sure end time stays within set range
-
+            # 数据库加载K线
             if self.mode == BacktestingMode.BAR:
                 data: List[BarData] = load_bar_data(
                     self.symbol,
@@ -1061,7 +1061,7 @@ def load_bar_data(
     start: datetime,
     end: datetime
 ) -> List[BarData]:
-    """"""
+    """数据库加载K线"""
     database: BaseDatabase = get_database()
 
     return database.load_bar_data(
