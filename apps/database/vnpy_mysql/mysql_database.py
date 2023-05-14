@@ -285,7 +285,7 @@ class MysqlDatabase(BaseDatabase):
             end: datetime
     ) -> List[BarData]:
         """加载K线数据"""
-        print('正在通过mysql_database正在加载K线数据...')
+        print('正在通过mysql_database正在读取K线数据...')
         s: ModelSelect = (
             DbBarData.select().where(
                 (DbBarData.symbol == symbol)
@@ -295,7 +295,7 @@ class MysqlDatabase(BaseDatabase):
                 & (DbBarData.datetime <= end)
             ).order_by(DbBarData.datetime)
         )
-
+        print(f'读取完成正在转化数据,数据量：{len(s)}')
         bars: List[BarData] = []
         for db_bar in s:
             bar: BarData = BarData(
