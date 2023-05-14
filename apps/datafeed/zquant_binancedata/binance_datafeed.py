@@ -6,6 +6,8 @@ from tqdm import tqdm
 from typing import Dict, List, Set, Optional, Callable
 from numpy import ndarray
 
+from apps.database.vnpy_datamanager import ManagerEngine
+from apps.database.vnpy_mysql.mysql_database import MysqlDatabase
 from core.trader import setting
 from core.trader.setting import SETTINGS
 from core.trader.constant import Exchange, Interval
@@ -18,8 +20,9 @@ from sdk.binance_sdk.binance.download.download_kline import download_daily_kline
 class BinanceDatafeed(BaseDatafeed):
     """binance数据服务接口"""
 
-    def __init__(self):
+    def __init__(self, mainEngine):
         """"""
+        self.mainEngine = mainEngine
         self.username: str = SETTINGS["datafeed.username"]
         self.password: str = SETTINGS["datafeed.password"]
 
@@ -99,6 +102,34 @@ class BinanceDatafeed(BaseDatafeed):
         files = os.listdir(folder_path)  # 获取csv的文件夹中的所有文件
         sorted_files = sorted(files, key=self._parse_file_name)  # 文件列表并降序
 
+        dataManager: ManagerEngine = self.mainEngine.get_engine("DataManager")  # 获取DataManager对象
+        overviews = dataManager.get_bar_overview()
+
+        existOverview = False
+        filter_files = []
+        if overviews:
+            for overview in overviews:
+                # 将‘d’转'1d'
+                if interval.value == 'd':
+                    goalInterval = '1' + interval.value
+                else:
+                    goalInterval = interval.value
+
+                # 数据库存在该数据作过滤处理
+                if overview.symbol == symbol and overview.interval.value == goalInterval:
+                    existOverview = True
+                    start_overview = overview.start
+                    end_overview = overview.end
+
+                    for file in sorted_files:
+                        dt = self._parse_file_name(file)
+                        if dt < start_overview or dt > end_overview:
+                            filter_files.append(file)
+
+                    sorted_files = filter_files
+
+                    break
+
         data: List[BarData] = []
         # 循环处理每个文件
         for file in sorted_files:
@@ -143,10 +174,10 @@ class BinanceDatafeed(BaseDatafeed):
 
                     # do some statistics
                     count += 1
-                    if not start:
-                        start = bar.datetime
+                    # if not start:
+                    #     start = bar.datetime
 
-        end: datetime = bar.datetime
+        # end: datetime = bar.datetime
         return data
 
     def _parse_file_name(self, file_name):

@@ -107,14 +107,14 @@ def download_daily_klines(trading_type: str = None,
 
         dates = new_dates
 
-    elif '1d' in intervals:  # 日线
-        new_dates = []
-        for date in dates:
-            new_date = convert_to_date_object(date)
-            if new_date.day == 1:
-                new_dates.append(new_date.strftime('%Y-%m-%d'))
-
-        dates = new_dates
+    # elif '1m' in intervals:  # 月线
+    #     new_dates = []
+    #     for date in dates:
+    #         new_date = convert_to_date_object(date)
+    #         if new_date.day == 1:
+    #             new_dates.append(new_date.strftime('%Y-%m-%d'))
+    #
+    #     dates = new_dates
 
     current = 0
     date_range = None

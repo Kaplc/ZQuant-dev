@@ -25,7 +25,7 @@ class ChartWizardEngine(BaseEngine):
         """"""
         super().__init__(main_engine, event_engine, APP_NAME)
 
-        self.datafeed: BaseDatafeed = get_datafeed()
+        self.datafeed: BaseDatafeed = get_datafeed(main_engine)
         self.database: BaseDatabase = get_database()
 
     def query_history(

@@ -94,7 +94,7 @@ class CtaEngine(BaseEngine):
         self.vt_tradeids: set = set()  # for filtering duplicate trade
 
         self.database: BaseDatabase = get_database()
-        self.datafeed: BaseDatafeed = get_datafeed()
+        self.datafeed: BaseDatafeed = get_datafeed(main_engine)
 
     def init_engine(self) -> None:
         """"""

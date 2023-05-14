@@ -24,7 +24,7 @@ class ManagerEngine(BaseEngine):
         super().__init__(main_engine, event_engine, APP_NAME)
 
         self.database: BaseDatabase = get_database()  # 获取数据库对象
-        self.datafeed: BaseDatafeed = get_datafeed()  # 获取数据服务对象
+        self.datafeed: BaseDatafeed = get_datafeed(main_engine)  # 获取数据服务对象
 
     def import_data_from_csv(
             self,
@@ -143,7 +143,7 @@ class ManagerEngine(BaseEngine):
             return False
 
     def get_bar_overview(self) -> List[BarOverview]:
-        """调用database对象"""
+        """调用database对象获取"""
         return self.database.get_bar_overview()
 
     def load_bar_data(

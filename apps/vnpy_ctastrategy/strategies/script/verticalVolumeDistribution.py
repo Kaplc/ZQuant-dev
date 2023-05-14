@@ -1,3 +1,7 @@
+"""统计竖向成交量分布"""
+import os
+import subprocess
+
 import matplotlib.pyplot as plt
 from typing import List
 from datetime import datetime
@@ -7,8 +11,8 @@ from core.trader.constant import Exchange, Interval
 from core.trader.object import BarData
 
 if __name__ == '__main__':
-    start = datetime(2023, 4, 19)
-    end = datetime(2023, 4, 22)
+    start = datetime(2021, 11, 1)
+    end = datetime(2022, 12, 1)
     print(f'读取数据{start}~{end}')
     # 获取历史数据
     bars: List[BarData] = load_bar_data(
@@ -18,7 +22,7 @@ if __name__ == '__main__':
         start=start,
         end=end,
     )
-    print('计算数据')
+    print('计算数据.')
     # 生成区间字典
     price_region_dict = {}
     total_region_start = 0
@@ -71,13 +75,13 @@ if __name__ == '__main__':
                 str(int(price_region_start)) + '-' + str(int(price_region_start + step))] += start_region_vol
             price_region_dict[str(int(price_region_end)) + '-' + str(int(price_region_end + step))] += end_region_vol
 
-    print('生成柱状图')
+    print('生成柱状图.')
     price_dict = {k: v for k, v in price_region_dict.items() if v != 0}
 
     plt.figure(figsize=(10, len(price_dict)//5))
     plt.barh(list(price_dict.keys()), list(price_dict.values()))
     plt.xticks(range(len(price_dict)), [str(key) + ' ' for key in price_dict.keys()], rotation=90)
-    plt.savefig("/home/kaplc/Desktop/my_bar_chart.png", dpi=600)
-    plt.show()
-
+    save_path = f"/home/kaplc/Desktop/price_vol_picture/{start.strftime('%Y-%m-%d')}~{end.strftime('%Y-%m-%d')}.png"
+    plt.savefig(save_path, dpi=100)
+    print('生成完毕.')
     pass

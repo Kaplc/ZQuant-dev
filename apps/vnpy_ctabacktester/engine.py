@@ -46,7 +46,7 @@ class BacktesterEngine(BaseEngine):
         self.backtesting_engine: BacktestingEngine = None
         self.thread: Thread = None
 
-        self.datafeed: BaseDatafeed = get_datafeed()
+        self.datafeed: BaseDatafeed = get_datafeed(main_engine)
         self.database: BaseDatabase = get_database()
 
         # Backtesting reuslt

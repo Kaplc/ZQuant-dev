@@ -35,7 +35,7 @@ class BaseDatafeed(ABC):
 datafeed: BaseDatafeed = None
 
 
-def get_datafeed() -> BaseDatafeed:
+def get_datafeed(mainEngine) -> BaseDatafeed:
     """服务器数据服务"""
     # Return datafeed object if already inited
     global datafeed
@@ -55,5 +55,5 @@ def get_datafeed() -> BaseDatafeed:
         module: ModuleType = import_module("apps.datafeed.zquant_binancedata")
 
     # Create datafeed object from module
-    datafeed = module.Datafeed()
+    datafeed = module.Datafeed(mainEngine)
     return datafeed
