@@ -157,7 +157,7 @@ def get_database() -> BaseDatabase:
 
     # Read database related global setting 从配置文件读取数据库配置
     database_name: str = SETTINGS["database.name"]
-    module_name: str = f"apps.database.vnpy_{database_name}"
+    module_name: str = f"apps.vnpy_datamanager.database.vnpy_{database_name}"
 
     # Try to import database module 导入数据库模块
     try:

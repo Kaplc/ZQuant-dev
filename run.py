@@ -1,11 +1,9 @@
-import os
-
 from core.event import EventEngine
 from core.trader.engine import MainEngine
 from core.trader.ui import MainWindow, create_qapp
 
-from apps.database.vnpy_datamanager import DataManagerApp
-from apps.chartwizard import ChartWizardApp
+from apps.vnpy_datamanager import DataManagerApp
+from apps.vnpy_chartwizard import ChartWizardApp
 from apps.vnpy_ctastrategy import CtaStrategyApp
 from apps.vnpy_ctabacktester import CtaBacktesterApp
 

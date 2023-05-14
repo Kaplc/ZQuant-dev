@@ -44,7 +44,7 @@ def get_datafeed(mainEngine) -> BaseDatafeed:
 
     # Read datafeed related global setting
     datafeed_name: str = SETTINGS["datafeed.name"]
-    module_name: str = f"apps.datafeed.{datafeed_name}"
+    module_name: str = f"apps.vnpy_datamanager.datafeed.{datafeed_name}"
 
     # Try to import datafeed module
     try:
@@ -52,7 +52,7 @@ def get_datafeed(mainEngine) -> BaseDatafeed:
         print(f"\n使用{datafeed_name}数据服务")
     except ModuleNotFoundError:
         print(f"找不到数据服务驱动{module_name}，使用默认的RQData数据服务")
-        module: ModuleType = import_module("apps.datafeed.zquant_binancedata")
+        module: ModuleType = import_module("apps.vnpy_datamanager.datafeed.zquant_binancedata")
 
     # Create datafeed object from module
     datafeed = module.Datafeed(mainEngine)

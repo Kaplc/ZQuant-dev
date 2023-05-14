@@ -34,7 +34,7 @@ from core.trader.ui import MainWindow, create_qapp
 # from vnpy_chartwizard import ChartWizardApp
 # from vnpy_rpcservice import RpcServiceApp
 # from vnpy_excelrtd import ExcelRtdApp
-from apps.database.vnpy_datamanager import DataManagerApp
+from apps.vnpy_datamanager import DataManagerApp
 
 
 # from vnpy_datarecorder import DataRecorderApp

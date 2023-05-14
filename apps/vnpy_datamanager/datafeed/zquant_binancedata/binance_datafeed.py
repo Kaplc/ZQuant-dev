@@ -2,17 +2,14 @@ import csv
 import zipfile
 import os
 from datetime import datetime, timedelta
-from tqdm import tqdm
-from typing import Dict, List, Set, Optional, Callable
+from typing import List, Optional, Callable
 from numpy import ndarray
 
-from apps.database.vnpy_datamanager import ManagerEngine
-from apps.database.vnpy_mysql.mysql_database import MysqlDatabase
-from core.trader import setting
+from apps.vnpy_datamanager import ManagerEngine
 from core.trader.setting import SETTINGS
 from core.trader.constant import Exchange, Interval
 from core.trader.object import BarData, TickData, HistoryRequest
-from core.trader.utility import round_to, ZoneInfo
+from core.trader.utility import ZoneInfo
 from core.trader.datafeed import BaseDatafeed
 from sdk.binance_sdk.binance.download.download_kline import download_daily_klines
 
