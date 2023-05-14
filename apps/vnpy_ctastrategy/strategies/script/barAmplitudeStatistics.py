@@ -105,7 +105,6 @@ def deal_with_minute(bars: List[BarData]):
     # # 将排序后的元组列表转换为字典
     # sorted_dict = dict(sorted_tuple_list)
 
-
     # 将字符串键转换为元组形式的键
     new_data = {}
     for k, v in init_dict.items():
@@ -122,7 +121,7 @@ if __name__ == '__main__':
 
     start = datetime(2020, 1, 1)
     end = datetime(2023, 5, 11)
-    interval = Interval.MINUTE
+    interval = Interval.HOUR
     print(f'\n开始读取数据--周期为{interval.value}，数据区间{start}~{end}')
     # 获取历史数据
     bars: List[BarData] = load_bar_data(
@@ -134,7 +133,6 @@ if __name__ == '__main__':
     )
 
     sorted_dict = {}
-
     if interval.value == 'd':  # 处理日线
         sorted_dict = deal_with_daily(bars)
     elif interval.value == '1h':
@@ -144,6 +142,8 @@ if __name__ == '__main__':
 
     total_percent = 0
     percentDict = {}
+    is80 = False
+    is85 = False
     is90 = False
     is95 = False
     for key in sorted_dict:
@@ -151,21 +151,22 @@ if __name__ == '__main__':
         total_percent += value
         percentDict[key] = str(sorted_dict[key]) + '根-占' + str(value) + '%'
 
+        if total_percent >= 80 and is80 == False:
+            is80 = True
+            res_percent = str(key[0]) + '%'
+            print(f'{interval.value}周期下，超过80%情况的K线幅度：>{res_percent}')
+        if total_percent >= 85 and is85 == False:
+            is85 = True
+            res_percent = str(key[0]) + '%'
+            print(f'{interval.value}周期下，超过85%情况的K线幅度：>{res_percent}')
         if total_percent >= 90 and is90 == False:
             is90 = True
-            # if interval.value == 'd' or interval.value == '1h':
             res_percent = str(key[0]) + '%'
-            # else:
-            #     res_percent = str(key).split('~')[0]
             print(f'{interval.value}周期下，超过90%情况的K线幅度：>{res_percent}')
         if total_percent >= 95 and is95 == False:
             is95 = True
-            # if interval.value == 'd' or interval.value == '1h':
             res_percent = str(key[0]) + '%'
-            # else:
-            #     res_percent = str(key).split('~')[0]
             print(f'{interval.value}周期下，超过95%情况的K线幅度：>{res_percent}')
-
 
     count = 0
     for res in sorted_dict:
