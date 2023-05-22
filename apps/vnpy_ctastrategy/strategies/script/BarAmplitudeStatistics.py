@@ -17,6 +17,19 @@ parm = {
 }
 
 
+class BAS:
+    """统计K线涨幅数量"""
+
+    def __init__(self, start: datetime, end: datetime, interval: Interval, bar_units: str):
+        self.start = start
+        self.end = end
+        self.interval = interval
+        self.bar_units = bar_units
+
+    def run(self):
+        pass
+
+
 def deal_with_daily(bars: List[BarData]):
     init_dict = {}
     # 先初始化字典
@@ -28,9 +41,9 @@ def deal_with_daily(bars: List[BarData]):
         init_dict[str(key) + '%~' + str(next_key) + '%'] = 0
 
     for bar in bars:
-        # barRangePercentile = (abs(bar.close_price - bar.open_price) / bar.open_price) * 100
-        barRangePercentile = (abs(bar.high_price - bar.low_price) / bar.low_price) * 100
-        # barRangePercentile = int(barRangePercentile * 10) / 10
+        barRangePercentile = (abs(bar.close_price - bar.open_price) / bar.open_price) * 100
+        # barRangePercentile = (abs(bar.high_price - bar.low_price) / bar.low_price) * 100
+        barRangePercentile = int(barRangePercentile * 10) / 10
         barRangePercentile = int(barRangePercentile)
         next_barRangePercentile = (int(barRangePercentile) + 1)
         key = str(barRangePercentile) + '%~' + str(next_barRangePercentile) + '%'
@@ -63,8 +76,8 @@ def deal_with_hour(bars: List[BarData]):
         init_dict[str(key) + '%~' + str(next_key) + '%'] = 0
 
     for bar in bars:
-        # barRangePercentile = (abs(bar.close_price - bar.open_price) / bar.open_price) * 100
-        barRangePercentile = (abs(bar.high_price - bar.low_price) / bar.low_price) * 100
+        barRangePercentile = (abs(bar.close_price - bar.open_price) / bar.open_price) * 100
+        # barRangePercentile = (abs(bar.high_price - bar.low_price) / bar.low_price) * 100
         barRangePercentile = int(barRangePercentile * 10) / 10
         next_barRangePercentile = (int(barRangePercentile * 10) + 1) / 10
         key = str(barRangePercentile) + '%~' + str(next_barRangePercentile) + '%'
@@ -91,8 +104,8 @@ def deal_with_minute(bars: List[BarData]):
     init_dict = {}
     for bar in bars:
         # 涨跌幅 = 涨跌额/开盘价
-        # barRangePercentile = (abs(bar.close_price - bar.open_price) / bar.open_price) * 100
-        barRangePercentile = (abs(bar.high_price - bar.low_price) / bar.low_price) * 100
+        barRangePercentile = (abs(bar.close_price - bar.open_price) / bar.open_price) * 100
+        # barRangePercentile = (abs(bar.high_price - bar.low_price) / bar.low_price) * 100
         barRangePercentile = int(barRangePercentile * 100) / 100
         next_barRangePercentile = (int(barRangePercentile * 100) + 1) / 100
         key = str("{:.3f}".format(barRangePercentile)) + '%~' + str("{:.3f}".format(next_barRangePercentile)) + '%'
@@ -101,13 +114,6 @@ def deal_with_minute(bars: List[BarData]):
             init_dict[key] = 1
         else:
             init_dict[key] += 1
-
-    # # 将字典转换为元组列表
-    # tuple_list = list(init_dict.items())
-    # # 按值大小排序
-    # sorted_tuple_list = sorted(tuple_list, key=lambda x: x[1], reverse=True)
-    # # 将排序后的元组列表转换为字典
-    # sorted_dict = dict(sorted_tuple_list)
 
     # 将字符串键转换为元组形式的键
     new_data = {}
@@ -126,7 +132,7 @@ if __name__ == '__main__':
     start = datetime(2020, 1, 1)
     end = datetime(2023, 5, 20)
     interval = Interval.HOUR
-    bar_units = '168h'
+    bar_units = '4h'
 
     print(f'\n开始读取数据--周期为{interval.value}，数据区间{start}~{end}')
     # 获取历史数据
@@ -137,8 +143,8 @@ if __name__ == '__main__':
         start=start,
         end=end,
     )
-    kl_gnr = KLineGenerator(bar_units, bars)
-    bars = kl_gnr.start(bars)
+    kline_gnr = KLineGenerator(bar_units, bars)
+    bars = kline_gnr.start(bars)
 
     sorted_dict = {}
     if interval.value == 'd':  # 处理日线
