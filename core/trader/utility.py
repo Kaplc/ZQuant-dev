@@ -195,7 +195,7 @@ class BarGenerator:
     def __init__(
             self,
             on_bar: Callable,  # 处理新的K线数据的回调函数
-            window: int = 0,  # 窗口的大小，通常在处理滚动窗口数据时使用
+            window: int = 0,  # 要用多少根K线合成
             on_window_bar: Callable = None,  # 处理窗口K线数据的回调函数
             interval: Interval = Interval.MINUTE  # K线数据的时间间隔
     ) -> None:

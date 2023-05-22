@@ -6,6 +6,7 @@ from typing import List
 from datetime import datetime
 
 from apps.vnpy_ctastrategy.backtesting import load_bar_data
+from apps.vnpy_ctastrategy.strategies.script.BarGenerator import KLineGenerator
 from core.trader.constant import Exchange, Interval
 from core.trader.object import BarData
 
@@ -27,7 +28,8 @@ def deal_with_daily(bars: List[BarData]):
         init_dict[str(key) + '%~' + str(next_key) + '%'] = 0
 
     for bar in bars:
-        barRangePercentile = (abs(bar.close_price - bar.open_price) / bar.open_price) * 100
+        # barRangePercentile = (abs(bar.close_price - bar.open_price) / bar.open_price) * 100
+        barRangePercentile = (abs(bar.high_price - bar.low_price) / bar.low_price) * 100
         # barRangePercentile = int(barRangePercentile * 10) / 10
         barRangePercentile = int(barRangePercentile)
         next_barRangePercentile = (int(barRangePercentile) + 1)
@@ -61,7 +63,8 @@ def deal_with_hour(bars: List[BarData]):
         init_dict[str(key) + '%~' + str(next_key) + '%'] = 0
 
     for bar in bars:
-        barRangePercentile = (abs(bar.close_price - bar.open_price) / bar.open_price) * 100
+        # barRangePercentile = (abs(bar.close_price - bar.open_price) / bar.open_price) * 100
+        barRangePercentile = (abs(bar.high_price - bar.low_price) / bar.low_price) * 100
         barRangePercentile = int(barRangePercentile * 10) / 10
         next_barRangePercentile = (int(barRangePercentile * 10) + 1) / 10
         key = str(barRangePercentile) + '%~' + str(next_barRangePercentile) + '%'
@@ -88,7 +91,8 @@ def deal_with_minute(bars: List[BarData]):
     init_dict = {}
     for bar in bars:
         # 涨跌幅 = 涨跌额/开盘价
-        barRangePercentile = (abs(bar.close_price - bar.open_price) / bar.open_price) * 100
+        # barRangePercentile = (abs(bar.close_price - bar.open_price) / bar.open_price) * 100
+        barRangePercentile = (abs(bar.high_price - bar.low_price) / bar.low_price) * 100
         barRangePercentile = int(barRangePercentile * 100) / 100
         next_barRangePercentile = (int(barRangePercentile * 100) + 1) / 100
         key = str("{:.3f}".format(barRangePercentile)) + '%~' + str("{:.3f}".format(next_barRangePercentile)) + '%'
@@ -120,8 +124,10 @@ def deal_with_minute(bars: List[BarData]):
 if __name__ == '__main__':
 
     start = datetime(2020, 1, 1)
-    end = datetime(2023, 5, 11)
+    end = datetime(2023, 5, 20)
     interval = Interval.HOUR
+    bar_units = '168h'
+
     print(f'\n开始读取数据--周期为{interval.value}，数据区间{start}~{end}')
     # 获取历史数据
     bars: List[BarData] = load_bar_data(
@@ -131,6 +137,8 @@ if __name__ == '__main__':
         start=start,
         end=end,
     )
+    kl_gnr = KLineGenerator(bar_units, bars)
+    bars = kl_gnr.start(bars)
 
     sorted_dict = {}
     if interval.value == 'd':  # 处理日线
@@ -147,26 +155,30 @@ if __name__ == '__main__':
     is90 = False
     is95 = False
     for key in sorted_dict:
-        value = int((sorted_dict[key] / len(bars)) * 1000000) / 10000
+        try:
+            value = int((sorted_dict[key] / len(bars)) * 1000000) / 10000
+        except Exception as e:
+            print(e)
+            continue
         total_percent += value
         percentDict[key] = str(sorted_dict[key]) + '根-占' + str(value) + '%'
 
         if total_percent >= 80 and is80 == False:
             is80 = True
             res_percent = str(key[0]) + '%'
-            print(f'{interval.value}周期下，超过80%情况的K线幅度：>{res_percent}')
+            print(f'{bar_units}周期下，超过80%情况的K线幅度：>{res_percent}')
         if total_percent >= 85 and is85 == False:
             is85 = True
             res_percent = str(key[0]) + '%'
-            print(f'{interval.value}周期下，超过85%情况的K线幅度：>{res_percent}')
+            print(f'{bar_units}周期下，超过85%情况的K线幅度：>{res_percent}')
         if total_percent >= 90 and is90 == False:
             is90 = True
             res_percent = str(key[0]) + '%'
-            print(f'{interval.value}周期下，超过90%情况的K线幅度：>{res_percent}')
+            print(f'{bar_units}周期下，超过90%情况的K线幅度：>{res_percent}')
         if total_percent >= 95 and is95 == False:
             is95 = True
             res_percent = str(key[0]) + '%'
-            print(f'{interval.value}周期下，超过95%情况的K线幅度：>{res_percent}')
+            print(f'{bar_units}周期下，超过95%情况的K线幅度：>{res_percent}')
 
     count = 0
     for res in sorted_dict:
