@@ -14,6 +14,57 @@ from core.trader.datafeed import BaseDatafeed
 from sdk.binance_sdk.binance.download.download_kline import download_daily_klines
 
 
+def parse_file_name(file_name):
+    """以日期时间排序key"""
+    # 获取日期部分，并解析为日期时间对象
+    split_list = file_name.split(".")[0].split("-")
+    dt_str = split_list[2] + '-' + split_list[3] + '-' + split_list[4]
+    dt = datetime.strptime(dt_str, "%Y-%m-%d")
+    return dt
+
+
+def csv_time_converter(sum_second):
+    """
+    转换币安下载历史数据的csv时间
+    :param sum_second: 从 1970 年 1 月 1 日开始的毫秒数
+    :return: datetime
+    """
+    # 计算对应的秒数
+    seconds_since_1970 = int(sum_second) // 1000
+    # 创建一个表示 1970 年 1 月 1 日的 datetime 对象
+    year_1970 = datetime(1970, 1, 1)
+    # 计算 1970 年 1 月 1 日开始的时间差
+    time_difference = timedelta(seconds=seconds_since_1970)
+    # 计算对应的日期
+    target_date = year_1970 + time_difference
+    return target_date
+
+
+def req_converter(req):
+    """请求转换成sdk合法参数"""
+
+    # 设置获取的交易类型cm，um，spot
+    trading_type: str = 'um'
+    # 交易对列表
+    symbols: list = []
+    symbols.append(req.symbol)
+    # 时间周期
+    intervals: list = []
+    intervals.append(req.interval.value)
+    # 开始结束时间
+    start_date: str = req.start.strftime('%Y-%m-%d')
+    end_date: str = req.end.strftime('%Y-%m-%d')
+
+    # 添加参数
+    req.trading_type = trading_type
+    req.symbols = symbols
+    req.intervals = intervals
+    req.start_date = start_date
+    req.end_date = end_date
+
+    return req
+
+
 class BinanceDatafeed(BaseDatafeed):
     """binance数据服务接口"""
 
@@ -33,7 +84,7 @@ class BinanceDatafeed(BaseDatafeed):
     def query_bar_history(self, req: HistoryRequest, output: Callable = print) -> Optional[
         List[BarData]]:
         """查询K线数据"""
-        converted_req = self._req_converter(req)
+        converted_req = req_converter(req)
         save_path = os.path.dirname(os.path.abspath(__file__))
         # binanceSDK下载历史行情
         download_path = download_daily_klines(
@@ -50,9 +101,9 @@ class BinanceDatafeed(BaseDatafeed):
             return []
 
         # 批量解压zip成csv
-        csv_path = self._unzip_to_csv(download_path, req, output)
+        csv_path = self.unzip_to_csv(download_path, req, output)
         # 批量加载csv
-        data: List[BarData] = self._import_data_from_csv(
+        data: List[BarData] = self.import_data_from_csv(
             folder_path=csv_path,
             symbol=req.symbol,
             exchange=req.exchange,
@@ -74,7 +125,7 @@ class BinanceDatafeed(BaseDatafeed):
         """查询Tick数据"""
         pass
 
-    def _import_data_from_csv(
+    def import_data_from_csv(
             self,
             folder_path: str,
             symbol: str,
@@ -97,7 +148,7 @@ class BinanceDatafeed(BaseDatafeed):
         print(f"正在读取csv.")
 
         files = os.listdir(folder_path)  # 获取csv的文件夹中的所有文件
-        sorted_files = sorted(files, key=self._parse_file_name)  # 文件列表并降序
+        sorted_files = sorted(files, key=parse_file_name)  # 文件列表并降序
 
         dataManager: ManagerEngine = self.mainEngine.get_engine("DataManager")  # 获取DataManager对象
         overviews = dataManager.get_bar_overview()
@@ -119,7 +170,7 @@ class BinanceDatafeed(BaseDatafeed):
                     end_overview = overview.end
 
                     for file in sorted_files:
-                        dt = self._parse_file_name(file)
+                        dt = parse_file_name(file)
                         if dt < start_overview or dt > end_overview:
                             filter_files.append(file)
 
@@ -146,8 +197,7 @@ class BinanceDatafeed(BaseDatafeed):
                 tz = ZoneInfo(tz_name)
 
                 for item in reader:
-
-                    dt = self._csv_time_converter(item[datetime_head])  # datetime转换
+                    dt = csv_time_converter(item[datetime_head])  # datetime转换
 
                     turnover = item.get(turnover_head, 0)
                     open_interest = item.get(open_interest_head, 0)
@@ -177,55 +227,7 @@ class BinanceDatafeed(BaseDatafeed):
         # end: datetime = bar.datetime
         return data
 
-    def _parse_file_name(self, file_name):
-        """以日期时间排序key"""
-        # 获取日期部分，并解析为日期时间对象
-        split_list = file_name.split(".")[0].split("-")
-        dt_str = split_list[2] + '-' + split_list[3] + '-' + split_list[4]
-        dt = datetime.strptime(dt_str, "%Y-%m-%d")
-        return dt
-
-    def _csv_time_converter(self, sum_second):
-        """
-        转换币安下载历史数据的csv时间
-        :param sum_second: 从 1970 年 1 月 1 日开始的毫秒数
-        :return: datetime
-        """
-        # 计算对应的秒数
-        seconds_since_1970 = int(sum_second) // 1000
-        # 创建一个表示 1970 年 1 月 1 日的 datetime 对象
-        year_1970 = datetime(1970, 1, 1)
-        # 计算 1970 年 1 月 1 日开始的时间差
-        time_difference = timedelta(seconds=seconds_since_1970)
-        # 计算对应的日期
-        target_date = year_1970 + time_difference
-        return target_date
-
-    def _req_converter(self, req):
-        """请求转换成sdk合法参数"""
-
-        # 设置获取的交易类型cm，um，spot
-        trading_type: str = 'um'
-        # 交易对列表
-        symbols: list = []
-        symbols.append(req.symbol)
-        # 时间周期
-        intervals: list = []
-        intervals.append(req.interval.value)
-        # 开始结束时间
-        start_date: str = req.start.strftime('%Y-%m-%d')
-        end_date: str = req.end.strftime('%Y-%m-%d')
-
-        # 添加参数
-        req.trading_type = trading_type
-        req.symbols = symbols
-        req.intervals = intervals
-        req.start_date = start_date
-        req.end_date = end_date
-
-        return req
-
-    def _unzip_to_csv(self, path, req, output):
+    def unzip_to_csv(self, path, req, output):
         """解压binanceK线zip"""
         # 指定待解压的文件夹路径
         folder_path = path

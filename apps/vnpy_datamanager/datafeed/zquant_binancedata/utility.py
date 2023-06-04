@@ -24,7 +24,7 @@ def _import_data_from_csv(
     print(f"正在读取csv.")
 
     files = os.listdir(folder_path)  # 获取csv的文件夹中的所有文件
-    sorted_files = sorted(files, key=self._parse_file_name)  # 文件列表并降序
+    sorted_files = sorted(files, key=_parse_file_name)  # 文件列表并降序
 
     dataManager: ManagerEngine = self.mainEngine.get_engine("DataManager")  # 获取DataManager对象
     overviews = dataManager.get_bar_overview()
@@ -46,7 +46,7 @@ def _import_data_from_csv(
                 end_overview = overview.end
 
                 for file in sorted_files:
-                    dt = self._parse_file_name(file)
+                    dt = _parse_file_name(file)
                     if dt < start_overview or dt > end_overview:
                         filter_files.append(file)
 
@@ -74,7 +74,7 @@ def _import_data_from_csv(
 
             for item in reader:
 
-                dt = self._csv_time_converter(item[datetime_head])  # datetime转换
+                dt = _csv_time_converter(item[datetime_head])  # datetime转换
 
                 turnover = item.get(turnover_head, 0)
                 open_interest = item.get(open_interest_head, 0)
