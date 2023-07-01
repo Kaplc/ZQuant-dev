@@ -4,6 +4,8 @@ from pathlib import Path
 from datetime import *
 import urllib.request
 from argparse import ArgumentParser, RawTextHelpFormatter, ArgumentTypeError
+from time import sleep
+
 from sdk.binance_sdk.binance.download.enums import *
 import pandas as pd
 
@@ -48,7 +50,7 @@ def get_all_symbols(type) -> list:
         else:
             response = urllib.request.urlopen("https://api.binance.com/api/v3/exchangeInfo").read()
     except:
-        print('获取交易对列表时网络异常')
+        print('获取交易对列表时网络异常，可能需要更换节点')
         return None
     return list(map(lambda symbol: symbol['symbol'], json.loads(response)['symbols']))
 
@@ -74,8 +76,11 @@ def download_file(base_path, file_name, date_range=None, folder=None):
         Path(get_destination_dir(base_path)).mkdir(parents=True, exist_ok=True)
 
     try:
+
         download_url = get_download_url(download_path)  # 拼接下载地址
         dl_file = urllib.request.urlopen(download_url)  # 发送请求
+
+
         length = dl_file.getheader('content-length')
         if length:
             length = int(length)

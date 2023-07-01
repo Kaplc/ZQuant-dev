@@ -86,6 +86,7 @@ class BacktesterEngine(BaseEngine):
     def load_strategy_class(self) -> None:
         """
         Load strategy class from source code.
+        加载策略class
         """
         app_path: Path = Path(apps.vnpy_ctastrategy.__file__).parent
         path1: Path = app_path.joinpath("strategies")
@@ -108,6 +109,7 @@ class BacktesterEngine(BaseEngine):
     def load_strategy_class_from_module(self, module_name: str) -> None:
         """
         Load strategy class from module file.
+        从模块文件加载策略类
         """
         try:
             module: ModuleType = importlib.import_module(module_name)

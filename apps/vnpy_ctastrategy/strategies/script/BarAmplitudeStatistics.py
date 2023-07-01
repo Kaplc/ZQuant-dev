@@ -5,9 +5,8 @@ import matplotlib.pyplot as plt
 from typing import List
 from datetime import datetime
 
-from apps.vnpy_ctastrategy.strategies.script.ScriptBase import ScriptBase, ZQInterval
+from apps.vnpy_ctastrategy.strategies.script.ScriptBase import ScriptBase, ZQInterval, KLineGenerator
 from apps.vnpy_ctastrategy.backtesting import load_bar_data
-from apps.vnpy_ctastrategy.strategies.script.BarGenerator import KLineGenerator
 from core.trader.constant import Exchange, Interval
 from core.trader.object import BarData
 
@@ -108,6 +107,7 @@ class BAS(ScriptBase):
                 is95 = True
                 res_percent = str(key[0]) + '%'
                 print(f'{self.zq_interval}周期下，超过95%情况的K线幅度：>{res_percent}')
+        print('==========================================')
 
     def init_resDict(self):
 
@@ -137,10 +137,11 @@ if __name__ == '__main__':
         symbol='BTCUSDT',
         exchange=Exchange.BINANCE,
         start=datetime(2020, 1, 1),
-        end=datetime(2023, 5, 20)
+        end=datetime(2023, 6, 1)
     )
-
+    bas.run('1h')
     bas.run('4h')
     bas.run('6h')
+    bas.run('24h')
     pass
 
