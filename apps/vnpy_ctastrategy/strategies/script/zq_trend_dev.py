@@ -18,7 +18,7 @@ def generator_localtime(bar):
     return datetime(y, m, d, h) + timedelta(hours=8)
 
 
-class ZQTrendStrategy(ScriptBase):
+class ZQTrendStrategy1(ScriptBase):
     """zq趋势策略dev"""
 
     def __init__(self, zq_interval: str, tar_range, hor_range):

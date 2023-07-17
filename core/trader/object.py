@@ -106,6 +106,10 @@ class BarData(BaseData):
     low_price: float = 0
     close_price: float = 0
 
+    # zq
+    # local_datetime: datetime = None
+    # bar_range: float = None
+
     def __post_init__(self) -> None:
         """"""
         self.vt_symbol: str = f"{self.symbol}.{self.exchange.value}"

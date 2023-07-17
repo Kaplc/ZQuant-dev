@@ -34,10 +34,10 @@ SETTINGS: Dict[str, Any] = {
     "database.timezone": get_localzone_name(),
     "database.name": "mysql",
     "database.database": "zquant_dev",
-    "database.host": "127.0.01",
+    "database.host": "127.0.0.1",
     "database.port": 3306,
     "database.user": "root",
-    "database.password": "123456"
+    "database.password": "111111"
 }
 
 # Load global setting from json file.从json文件加载全局设置
