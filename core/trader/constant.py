@@ -159,6 +159,7 @@ class Interval(Enum):
     K线周期
     """
     MINUTE = "1m"
+    MINUTE_15 = "15m"
     HOUR = "1h"
     DAILY = "d"
     # DAILY = "1d"

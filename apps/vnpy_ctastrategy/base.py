@@ -54,4 +54,6 @@ INTERVAL_DELTA_MAP: Dict[Interval, timedelta] = {
     Interval.MINUTE: timedelta(minutes=1),
     Interval.HOUR: timedelta(hours=1),
     Interval.DAILY: timedelta(days=1),
+    # ==============zq=================
+    Interval.MINUTE_15: timedelta(minutes=15)
 }

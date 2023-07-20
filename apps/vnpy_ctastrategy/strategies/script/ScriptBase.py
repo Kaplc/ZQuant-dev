@@ -68,10 +68,10 @@ def load_bars_data(
     """数据库加载K线"""
     # print('正在加载历史数据')
     database: BaseDatabase = get_database()
-
-    return database.load_bar_data(
+    data = database.load_bar_data(
         symbol, exchange, interval, start, end
     )
+    return data
 
 
 class ZQLoadBars:
@@ -101,6 +101,7 @@ class ZQLoadBars:
             start=self.start,
             end=self.end,
         )
+
         # ZQ K线合成器合成K线
         bar_generator = ZQKLineGenerator(src_bars, self.zq_interval.vnInterval)
         self.bars = bar_generator.start(self.zq_interval.value)  # 开始合成新K线列表

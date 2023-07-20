@@ -342,11 +342,12 @@ class BarGenerator:
                 turnover=bar.turnover,
                 open_interest=bar.open_interest
             )
+            self.on_hour_bar(self.hour_bar)
             return
 
         finished_bar: BarData = None
 
-        # If minute is 59, update minute bar into window bar and push
+        # If minute is 59, update minute bar into window bar and push 如果分钟为59，则将分钟栏更新为窗口栏并按下
         if bar.datetime.minute == 59:
             self.hour_bar.high_price = max(
                 self.hour_bar.high_price,
@@ -365,9 +366,9 @@ class BarGenerator:
             finished_bar = self.hour_bar
             self.hour_bar = None
 
-        # If minute bar of new hour, then push existing window bar
+        # If minute bar of new hour, then push existing window bar 如果是新小时的分钟栏，则推送现有窗口栏
         elif bar.datetime.hour != self.hour_bar.datetime.hour:
-            finished_bar = self.hour_bar
+            # finished_bar = self.hour_bar
 
             dt: datetime = bar.datetime.replace(minute=0, second=0, microsecond=0)
             self.hour_bar = BarData(
@@ -383,6 +384,7 @@ class BarGenerator:
                 turnover=bar.turnover,
                 open_interest=bar.open_interest
             )
+            finished_bar = self.hour_bar
         # Otherwise only update minute bar
         else:
             self.hour_bar.high_price = max(
