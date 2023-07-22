@@ -105,7 +105,7 @@ def run_bf_optimization(
     output("开始执行穷举算法优化")
     output(f"参数优化空间：{len(settings)}")
 
-    start: int = perf_counter()
+    start: int = perf_counter()  # 开始时间
 
     with ProcessPoolExecutor(
             max_workers,

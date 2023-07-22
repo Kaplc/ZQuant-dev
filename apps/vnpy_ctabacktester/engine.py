@@ -1,7 +1,7 @@
 from ast import List
 import importlib
 import traceback
-from datetime import datetime
+from datetime import datetime, timedelta
 from threading import Thread
 from pathlib import Path
 from inspect import getfile
@@ -25,6 +25,9 @@ from apps.vnpy_ctastrategy.backtesting import (
     OptimizationSetting,
     BacktestingMode
 )
+
+# --------------------------zq--------------------------- #
+from apps.vnpy_ctastrategy.strategies.script.ScriptBase import ZQIntervalConvert
 
 APP_NAME = "CtaBacktester"
 
@@ -55,6 +58,10 @@ class BacktesterEngine(BaseEngine):
 
         # Optimization result
         self.result_values: list = None
+
+        # --------------------------zq--------------------------- #
+        self.last_history_bars: List[BarData] = None
+        pass
 
     def init_engine(self) -> None:
         """"""
@@ -153,7 +160,8 @@ class BacktesterEngine(BaseEngine):
             capital: int,
             setting: dict
     ) -> None:
-        """"""
+        """开始跑回测线程"""
+
         self.result_df = None
         self.result_statistics = None
 
@@ -184,10 +192,28 @@ class BacktesterEngine(BaseEngine):
             setting
         )
 
-        engine.load_data()
+        if self.last_history_bars is None:
+            engine.load_data()  # 开始加载数据
+            self.last_history_bars = engine.history_data
+        else:
+            last_start = self.last_history_bars[0].datetime.replace(tzinfo=None)
+            last_end = self.last_history_bars[-1].datetime.replace(tzinfo=None)
+            zq_interval = ZQIntervalConvert(interval)
+            if zq_interval.unit == 'h':
+                last_end += timedelta(hours=zq_interval.value)
+                pass
+            elif zq_interval.unit == 'm':
+                last_end += timedelta(minutes=zq_interval.value)
+
+            if last_start == start and last_end == end:
+                # 开始结束日期使用上一次读取的历史数据
+                engine.history_data = self.last_history_bars
+            else:
+                engine.load_data()  # 时间不对则重新加载数据
+                self.last_history_bars = engine.history_data
 
         try:
-            engine.run_backtesting()
+            engine.run_backtesting()  # 开始回测
         except Exception:
             msg: str = f"策略回测失败，触发异常：\n{traceback.format_exc()}"
             self.write_log(msg)
@@ -198,7 +224,7 @@ class BacktesterEngine(BaseEngine):
         self.result_df = engine.calculate_result()
         self.result_statistics = engine.calculate_statistics(output=False)
 
-        # Clear thread object handler.
+        # Clear thread object handler. 关闭线程
         self.thread = None
 
         # Put backtesting done event
@@ -219,6 +245,7 @@ class BacktesterEngine(BaseEngine):
             capital: int,
             setting: dict
     ) -> bool:
+        """开始回测"""
         if self.thread:
             self.write_log("已有任务在运行中，请等待完成")
             return False
@@ -277,7 +304,7 @@ class BacktesterEngine(BaseEngine):
             use_ga: bool,
             max_workers: int
     ) -> None:
-        """"""
+        """运行参数优化"""
         self.result_values = None
 
         engine: BacktestingEngine = self.backtesting_engine
@@ -307,7 +334,7 @@ class BacktesterEngine(BaseEngine):
             {}
         )
 
-        # 0则代表不限制
+        # 0则代表不限制线程数量
         if max_workers == 0:
             max_workers = None
 
@@ -348,6 +375,7 @@ class BacktesterEngine(BaseEngine):
             use_ga: bool,
             max_workers: int
     ) -> bool:
+        """开始优化参数"""
         if self.thread:
             self.write_log("已有任务在运行中，请等待完成")
             return False

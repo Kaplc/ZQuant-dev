@@ -85,6 +85,7 @@ class BacktestingEngine:
     def clear_data(self) -> None:
         """
         Clear all data of last backtesting.
+        清除上次回溯测试的所有数据
         """
         self.strategy = None
         self.tick = None
@@ -192,17 +193,6 @@ class BacktestingEngine:
                 #     start,
                 #     end
                 # )
-                # for index in range(0, len(data)):
-                #     try:
-                #         zq_bar = zq_data[index]
-                #         vn_bar = data[index]
-                #         if zq_data[index].open_price == data[index].open_price and zq_data[index].close_price == data[index].close_price and zq_data[
-                #             index].high_price == data[index].high_price and zq_data[index].low_price == data[index].low_price:
-                #             pass
-                #         else:
-                #             print('error' + index)
-                #     except Exception as e:
-                #         print(e)
 
             else:
                 data: List[TickData] = load_tick_data(
@@ -232,7 +222,7 @@ class BacktestingEngine:
 
         self.strategy.on_init()
 
-        # Use the first [days] of history data for initializing strategy
+        # Use the first [days] of history data for initializing  使用历史数据的前[天]初始化策略
         day_count: int = 0
         ix: int = 0
 
@@ -562,11 +552,11 @@ class BacktestingEngine:
             output: bool = True,
             max_workers: int = None
     ) -> list:
-        """"""
+        """运行穷举算法优化"""
         if not check_optimization_setting(optimization_setting):
             return
 
-        evaluate_func: callable = wrap_evaluate(self, optimization_setting.target_name)
+        evaluate_func: callable = wrap_evaluate(self, optimization_setting.target_name)  # 生成所有进程要执行的函数
         results: list = run_bf_optimization(
             evaluate_func,
             optimization_setting,
@@ -590,7 +580,7 @@ class BacktestingEngine:
             output: bool = True,
             max_workers: int = None
     ) -> list:
-        """"""
+        """运行遗传算法优化"""
         if not check_optimization_setting(optimization_setting):
             return
 
@@ -848,7 +838,7 @@ class BacktestingEngine:
             price: float,
             volume: float
     ) -> str:
-        """"""
+        """发送停止单"""
         self.stop_order_count += 1
 
         stop_order: StopOrder = StopOrder(
@@ -874,7 +864,7 @@ class BacktestingEngine:
             price: float,
             volume: float
     ) -> str:
-        """"""
+        """发送限价单"""
         self.limit_order_count += 1
 
         order: OrderData = OrderData(
@@ -905,7 +895,7 @@ class BacktestingEngine:
             self.cancel_limit_order(strategy, vt_orderid)
 
     def cancel_stop_order(self, strategy: CtaTemplate, vt_orderid: str) -> None:
-        """"""
+        """取消停止单"""
         if vt_orderid not in self.active_stop_orders:
             return
         stop_order: StopOrder = self.active_stop_orders.pop(vt_orderid)
@@ -914,7 +904,7 @@ class BacktestingEngine:
         self.strategy.on_stop_order(stop_order)
 
     def cancel_limit_order(self, strategy: CtaTemplate, vt_orderid: str) -> None:
-        """"""
+        """取消限价单"""
         if vt_orderid not in self.active_limit_orders:
             return
         order: OrderData = self.active_limit_orders.pop(vt_orderid)
@@ -1120,10 +1110,12 @@ def evaluate(
         capital: int,
         end: datetime,
         mode: BacktestingMode,
+        history_bars: list,
         setting: dict
 ) -> tuple:
     """
     Function for running in multiprocessing.pool
+    用于在进程中运行的函数
     """
     engine: BacktestingEngine = BacktestingEngine()
 
@@ -1141,7 +1133,12 @@ def evaluate(
     )
 
     engine.add_strategy(strategy_class, setting)
-    engine.load_data()
+
+    # engine.load_data()
+
+    engine.history_data = history_bars
+    print(f'使用历史数据日期范围: {history_bars[0].datetime} ~ {history_bars[-1].datetime}')
+
     engine.run_backtesting()
     engine.calculate_result()
     statistics: dict = engine.calculate_statistics(output=False)
@@ -1153,7 +1150,11 @@ def evaluate(
 def wrap_evaluate(engine: BacktestingEngine, target_name: str) -> callable:
     """
     Wrap evaluate function with given setting from backtesting engine.
+    使用来自回溯测试引擎的给定设置包裹评估函数
     """
+    print("仅加载一次加载历史数据---zq优化")
+    engine.load_data()
+    # 固定不变参数生成执行函数集合
     func: callable = partial(
         evaluate,
         target_name,
@@ -1167,7 +1168,8 @@ def wrap_evaluate(engine: BacktestingEngine, target_name: str) -> callable:
         engine.pricetick,
         engine.capital,
         engine.end,
-        engine.mode
+        engine.mode,
+        engine.history_data
     )
     return func
 

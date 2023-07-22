@@ -200,6 +200,7 @@ class CtaTemplate(ABC):
         """
         Send short order to open as short position.
         """
+        # print(f"开空:{price}")
         return self.send_order(
             Direction.SHORT,
             Offset.OPEN,
@@ -220,7 +221,9 @@ class CtaTemplate(ABC):
     ) -> list:
         """
         Send cover order to close a short position.
+        发送补仓指令以平仓空头头寸
         """
+        # print(f'平空: {price}')
         return self.send_order(
             Direction.LONG,
             Offset.CLOSE,

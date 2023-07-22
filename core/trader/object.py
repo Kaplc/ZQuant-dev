@@ -157,6 +157,16 @@ class OrderData(BaseData):
         )
         return req
 
+    def __str__(self):
+        return f'++' \
+               f'订单id:{self.vt_orderid}' \
+               f'  类型: {self.type.value}' \
+               f'  日期: {self.datetime}' \
+               f'  方向: {self.direction.value}' \
+               f'  价格: {self.price}' \
+               f'  状态: {self.status.value}' \
+               f'++'
+
 
 @dataclass
 class TradeData(BaseData):

@@ -341,6 +341,7 @@ class CtaEngine(BaseEngine):
     ) -> list:
         """
         Send a limit order to server.
+        发送限价单
         """
         return self.send_server_order(
             strategy,
