@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
-from typing import List
+from time import sleep
+from typing import List, Dict
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -7,18 +8,24 @@ from apps.vnpy_ctastrategy import CtaTemplate, StopOrder
 
 from core.trader.constant import Exchange, Interval
 from core.trader.object import BarData, TickData, TradeData, OrderData
-from apps.vnpy_ctastrategy.strategies.script.ScriptBase import ZQLoadBars, ZQIntervalConvert, generator_localtime
+from apps.vnpy_ctastrategy.strategies.script.ZQTools import *
 
 
 class ZQTrendStrategy4(CtaTemplate):
     author = "用Python的交易员"
 
+    debug = False
+
     # 参数
-    tar_range = 0.6
-    i = 1.0
+    tar_range = 6  # 影线幅度x0.1
+    i = 10  # 止盈倍数x0.1
+    each_amount = 20  # 每笔风险
 
     #
     ss_sl_dict = {}
+    is_long = None
+    active_orders: List[ZQOrder] = []
+    achievement_orders: List[ZQOrder] = []
 
     parameters = ["tar_range", "i"]
     variables = ["tar_range", "i"]
@@ -34,9 +41,11 @@ class ZQTrendStrategy4(CtaTemplate):
         self.write_log("策略初始化")
         self.load_bar(5)
 
-        # self.tar_range /= 10
-        # self.i /= 10
+        self.tar_range /= 10
+        self.i /= 10
         self.ss_sl_dict = {}
+        self.active_orders = []
+        self.achievement_orders = []
 
     def on_start(self):
         """
@@ -58,42 +67,26 @@ class ZQTrendStrategy4(CtaTemplate):
         """
         Callback of new bar data update.
         """
-        long_or_short = self.check_tar_bar(bar)
+        if self.debug:
+            print(bar)
 
-        if long_or_short == "long":
-            # 多
-            # print('==================')
-            self.buy(price=bar.close_price, volume=1)
-            # 设置止盈止损
-            stop_loss_price = bar.low_price
-            stop_surplus_price = bar.close_price + abs(bar.close_price - bar.low_price) * self.i
-            # 止盈stop
-            stop_surplus_order_ids = self.sell(stop_surplus_price, 1)
-            stop_loss_order_ids = self.sell(stop_loss_price, 1, stop=True)
-            if self.trading:
-                self.ss_sl_dict[stop_surplus_order_ids[0]] = stop_loss_order_ids[0]  # 止盈订单id-止损订单id
-                self.ss_sl_dict[stop_loss_order_ids[0]] = stop_surplus_order_ids[0]  # 止损订单id-止盈订单id
-            # print(f"做多, 日期:{bar.local_datetime}")
+        # 识别关键K线
+        direction = self.check_tar_bar(bar)
 
-        elif long_or_short == "short":
-            # 空
-            # print('=======================')
-            # print(f'日期: {bar.datetime}')
-            self.short(price=bar.close_price, volume=1)
+        # 开仓
+        self.open_pos(direction, bar)
 
-            stop_loss_price = bar.high_price
-            stop_surplus_price = bar.close_price - abs(bar.high_price - bar.close_price) * self.i
+        # 初始止盈止损
+        for zq_order in self.active_orders:
+            if zq_order.order.status == Status.ALLTRADED and zq_order.stop_surplus_order is None and zq_order.stop_loss_order is None:
+                # 订单全部成交和没有止盈止损单才进行止盈止损
+                self.start_stop_surplus_or_loss(zq_order)
 
-            # 真实价格再停止单之上会立即触发,
-
-            # 做空止盈挂限价单
-            stop_surplus_order_ids: List[OrderData.orderid] = self.cover(stop_surplus_price, 1)
-            # 做空止损挂停止单
-            stop_loss_order_ids: List[OrderData.orderid] = self.cover(stop_loss_price, 1, stop=True)
-
-            if self.trading:
-                self.ss_sl_dict[stop_surplus_order_ids[0]] = stop_loss_order_ids[0]  # 止盈订单id-止损订单id
-                self.ss_sl_dict[stop_loss_order_ids[0]] = stop_surplus_order_ids[0]  # 止损订单id-止盈订单id
+        # 移动止损
+        for zq_order in self.active_orders:
+            if zq_order.state == ZQOrderState.Trading and zq_order.stop_surplus_order is not None and zq_order.stop_loss_order is not None:
+                # 订单状态为持仓中且有止盈止损单才进行止盈止损
+                self.move_stop_loss(bar, zq_order)
 
         self.put_event()
 
@@ -102,7 +95,7 @@ class ZQTrendStrategy4(CtaTemplate):
         Callback of new order data update.
         订单状态更新回调
         """
-        # print(f'委托{order}')
+        # print(f'委托==> {order}')
         pass
 
     def on_trade(self, trade: TradeData):
@@ -111,21 +104,12 @@ class ZQTrendStrategy4(CtaTemplate):
         订单成交回调
         """
         # print(self.cta_engine.limit_orders[trade.vt_orderid])
-        # print(f'成交订单id: {trade.vt_orderid}  成交时间: {trade.datetime}  成交价: {trade.price}')
+        if self.debug:
+            print(f'成交==> {trade}')
 
-        # stop触发后转换的limit订单
-        for stop_order in self.cta_engine.stop_orders.values():
-
-            if stop_order.vt_orderids:
-                if stop_order.vt_orderids[0] == trade.vt_orderid:
-                    # stop与limit对应成功, 取消双向绑定的限价单委托
-                    self.cancel_order(self.ss_sl_dict[stop_order.stop_orderid])
-
-        # 原生limit
-        if self.ss_sl_dict.get(trade.vt_orderid) is not None:
-            # 找到对应的止损止盈订单id, 取消委托
-            self.cancel_order(self.ss_sl_dict[trade.vt_orderid])
-
+        self.update_zqorder_state(trade)  # zq_order的stop单成交, 则改变zq订单状态
+        self.cancel_relative_surplus_or_loss_order(trade)  # 取消止盈止损相对的挂单
+        self.update_active_orders()  # 更新活跃订单列表
         self.put_event()
 
     def on_stop_order(self, stop_order: StopOrder):
@@ -136,6 +120,7 @@ class ZQTrendStrategy4(CtaTemplate):
 
     # =====================zq=======================
     def check_tar_bar(self, bar: BarData):
+        """识别关键K线"""
         if bar.close_price - bar.open_price >= 0:
             # 阳线
             # 上影线
@@ -167,6 +152,152 @@ class ZQTrendStrategy4(CtaTemplate):
                 return False
             # print(f'long: {bar.datetime}')
             return "long"
+
+    def open_pos(self, direction, bar):
+        """开仓"""
+        if direction == "long":
+            # 多
+            if self.debug:
+                print("==========long==========")
+            # 计算止盈止损
+            stop_loss_price = bar.low_price
+            stop_surplus_price = bar.close_price + abs(bar.close_price - bar.low_price) * self.i
+            # 计算数量
+            volume = int((self.each_amount / abs(bar.close_price - stop_loss_price)) * 1000) / 1000
+            # 下单
+            order = self.buy(price=bar.close_price, volume=volume)
+            if self.trading:
+                # 生成zq_order对象
+                zq_order = ZQOrder(
+                    order=self.cta_engine.limit_orders[order[0]],
+                    stop_surplus_order=None,
+                    stop_loss_order=None,
+                    direction=ZQOrderDirection.Long,
+                    stop_surplus_price=stop_surplus_price,
+                    stop_loss_price=stop_loss_price,
+                    volume=volume
+                )
+                self.active_orders.append(zq_order)
+
+                return zq_order
+
+        elif direction == "short":
+            # 空
+            if self.debug:
+                print("========short============")
+            stop_loss_price = bar.high_price
+            stop_surplus_price = bar.close_price - abs(bar.high_price - bar.close_price) * self.i
+            volume = int((self.each_amount / abs(bar.close_price - stop_loss_price)) * 1000) / 1000
+            order = self.short(price=bar.close_price, volume=volume)
+            if self.trading:
+                # 生成zq_order对象
+                zq_order = ZQOrder(
+                    order=self.cta_engine.limit_orders[order[0]],
+                    stop_surplus_order=None,
+                    stop_loss_order=None,
+                    direction=ZQOrderDirection.Short,
+                    stop_surplus_price=stop_surplus_price,
+                    stop_loss_price=stop_loss_price,
+                    volume=volume
+                )
+                self.active_orders.append(zq_order)
+
+                return zq_order
+
+    def start_stop_surplus_or_loss(self, zq_order):
+        """开始挂单止盈止损"""
+        # 活跃订单已成交且无止盈止损单
+        if zq_order.direction == ZQOrderDirection.Long:
+            stop_surplus_orderid = self.sell(zq_order.stop_surplus_price, zq_order.volume)[0]
+            stop_loss_orderid = self.sell(zq_order.stop_loss_price, zq_order.volume, stop=True)[0]  # 止损stop
+
+            zq_order.stop_surplus_order = self.cta_engine.limit_orders[stop_surplus_orderid]
+            zq_order.stop_loss_order = self.cta_engine.stop_orders[stop_loss_orderid]
+
+        elif zq_order.direction == ZQOrderDirection.Short:
+            stop_surplus_orderid = self.cover(zq_order.stop_surplus_price, zq_order.volume)[0]
+            stop_loss_orderid = self.cover(zq_order.stop_loss_price, zq_order.volume, stop=True)[0]
+
+            zq_order.stop_surplus_order = self.cta_engine.limit_orders[stop_surplus_orderid]
+            zq_order.stop_loss_order = self.cta_engine.stop_orders[stop_loss_orderid]
+
+    def move_stop_loss(self, bar, zq_order):
+        """移动止损"""
+        if zq_order.direction == ZQOrderDirection.Long and zq_order.state == ZQOrderState.Trading:  # 多单
+            stop_loss_distance = abs(zq_order.stop_loss_order.price - zq_order.order.price)  # 止损距离
+
+            if bar.low_price - stop_loss_distance > zq_order.stop_loss_order.price:
+                # 修改止损
+                if type(zq_order.stop_loss_order) == OrderData:
+                    # limit
+                    self.cancel_order(zq_order.stop_loss_order.vt_orderid)  # 取消当前止损单
+                    new_stop_loss_order = self.sell(bar.close_price - stop_loss_distance, zq_order.stop_loss_order.volume, stop=True)  # 重新挂单
+
+                    zq_order.stop_loss_order = self.cta_engine.stop_orders[new_stop_loss_order[0]]  # 修改最新的止损单
+                    if self.debug:
+                        print(f'最新移动止损 {self.cta_engine.stop_orders[new_stop_loss_order[0]]}')
+
+                else:
+                    # stop
+                    self.cancel_order(zq_order.stop_loss_order.stop_orderid)
+                    new_stop_loss_order = self.sell(bar.close_price - stop_loss_distance, zq_order.stop_loss_order.volume, stop=True)  # 重新挂单
+
+                    zq_order.stop_loss_order = self.cta_engine.stop_orders[new_stop_loss_order[0]]
+                    if self.debug:
+                        print(f'最新移动止损 {self.cta_engine.stop_orders[new_stop_loss_order[0]]}')
+
+        elif zq_order.direction == ZQOrderDirection.Short and zq_order.state == ZQOrderState.Trading:  # 空单
+            stop_loss_distance = abs(zq_order.stop_loss_order.price - zq_order.order.price)
+
+            if bar.high_price + stop_loss_distance < zq_order.stop_loss_order.price:
+                if type(zq_order.stop_loss_order) == OrderData:
+                    # limit
+                    self.cancel_order(zq_order.stop_loss_order.vt_orderid)
+                    new_stop_loss_order = self.cover(bar.close_price + stop_loss_distance, zq_order.stop_loss_order.volume, stop=True)
+
+                    zq_order.stop_loss_order = self.cta_engine.stop_orders[new_stop_loss_order[0]]
+                    if self.debug:
+                        print(f'最新移动止损 {self.cta_engine.stop_orders[new_stop_loss_order[0]]}')
+
+                else:
+                    # stop
+                    self.cancel_order(zq_order.stop_loss_order.stop_orderid)
+                    new_stop_loss_order = self.cover(bar.close_price + stop_loss_distance, zq_order.stop_loss_order.volume, stop=True)
+
+                    zq_order.stop_loss_order = self.cta_engine.stop_orders[new_stop_loss_order[0]]
+                    if self.debug:
+                        print(f'最新移动止损 {self.cta_engine.stop_orders[new_stop_loss_order[0]]}')
+
+    def cancel_relative_surplus_or_loss_order(self, trade):
+        """取消对应的止盈或止损单"""
+        for zq_order in self.active_orders:
+            if zq_order.stop_loss_order is not None and zq_order.stop_surplus_order is not None:
+                if zq_order.stop_surplus_order.status == Status.ALLTRADED or zq_order.stop_surplus_order.status == StopOrderStatus.TRIGGERED:
+                    self.cancel_order(zq_order.stop_loss_order.get_vt_orderid())
+                elif zq_order.stop_loss_order.status == Status.ALLTRADED or zq_order.stop_loss_order.status == StopOrderStatus.TRIGGERED:
+                    self.cancel_order(zq_order.stop_surplus_order.get_vt_orderid())
+
+    def update_active_orders(self):
+        """更新活跃订单"""
+        for zq_order in self.active_orders:
+            zq_order.update_order_state()  # 有成交就更新订单状态
+            # 移除已经止盈止损的
+            if zq_order.state == ZQOrderState.Stop_Loss or zq_order.state == ZQOrderState.Stop_Surplus:
+                self.achievement_orders.append(zq_order)
+                self.active_orders.remove(zq_order)
+
+    def update_zqorder_state(self, trade):
+        """更新zq订单状态"""
+        # 更新订单stop=>limit
+        for zq_order in self.active_orders:
+            if zq_order.order.get_vt_orderid() == trade.vt_orderid:
+                # zq_order.order = self.cta_engine.limit_orders[trade.vt_orderid]  # 修改order
+                zq_order.state = ZQOrderState.Trading  # 修改状态
+
+    def vt_orderid_to_stop_orderid(self, vt_orderid):
+        for stop_order in self.cta_engine.stop_orders:
+            if stop_order.get_vt_orderid() == vt_orderid:
+                return stop_order.stop_orderid
 
 
 # class ZQTrendStrategy4

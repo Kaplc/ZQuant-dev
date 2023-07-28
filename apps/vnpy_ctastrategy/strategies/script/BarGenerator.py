@@ -4,7 +4,7 @@ from enum import Enum
 from typing import List
 
 from apps.vnpy_ctastrategy.backtesting import load_bar_data
-from apps.vnpy_ctastrategy.strategies.script.ScriptBase import ZQInterval
+from apps.vnpy_ctastrategy.strategies.script.ZQTools import ZQInterval
 from core.trader.constant import Interval, Exchange
 from core.trader.object import BarData
 from core.trader.utility import BarGenerator

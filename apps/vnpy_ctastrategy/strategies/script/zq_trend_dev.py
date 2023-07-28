@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 from core.trader.constant import Exchange, Interval
 from core.trader.object import BarData
-from ScriptBase import ScriptBase
+from ZQTools import ScriptBase
 
 
 def generator_localtime(bar):

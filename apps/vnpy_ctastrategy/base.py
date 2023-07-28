@@ -44,6 +44,15 @@ class StopOrder:
     vt_orderids: list = field(default_factory=list)
     status: StopOrderStatus = StopOrderStatus.WAITING
 
+    def get_vt_orderid(self):
+        if self.vt_orderids:
+            return self.vt_orderids[0]
+        else:
+            return self.stop_orderid
+
+    def __str__(self):
+        return f'订单id: {self.stop_orderid}  日期: {self.datetime}  方向: {self.direction}  价格: {self.price}  状态: {self.status.value}'
+
 
 EVENT_CTA_LOG = "eCtaLog"
 EVENT_CTA_STRATEGY = "eCtaStrategy"

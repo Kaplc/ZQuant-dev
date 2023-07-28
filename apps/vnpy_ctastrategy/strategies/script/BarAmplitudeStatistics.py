@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from typing import List
 from datetime import datetime
 
-from apps.vnpy_ctastrategy.strategies.script.ScriptBase import ZQIntervalConvert, ZQKLineGenerator, load_bars_data
+from apps.vnpy_ctastrategy.strategies.script.ZQTools import ZQIntervalConvert, ZQKLineGenerator, load_bars_data
 from apps.vnpy_ctastrategy.backtesting import load_bar_data
 from core.trader.constant import Exchange, Interval
 from core.trader.object import BarData

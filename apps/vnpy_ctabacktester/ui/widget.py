@@ -809,7 +809,7 @@ class BacktesterChart(pg.GraphicsLayoutWidget):
         self.profit_pnl_bar.setOpts(x=profit_pnl_x, height=profit_pnl_height)
         self.loss_pnl_bar.setOpts(x=loss_pnl_x, height=loss_pnl_height)
 
-        # Set data for pnl distribution
+        # Set data for pnl distribution 设置pnl分布的数据
         hist, x = np.histogram(df["net_pnl"], bins="auto")
         x = x[:-1]
         self.distribution_curve.setData(x, hist)

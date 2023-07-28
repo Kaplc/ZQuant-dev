@@ -114,6 +114,9 @@ class BarData(BaseData):
         """"""
         self.vt_symbol: str = f"{self.symbol}.{self.exchange.value}"
 
+    def __str__(self):
+        return f'日期: {self.datetime}  高: {self.high_price}  开: {self.open_price}  低: {self.low_price}  收: {self.close_price}'
+
 
 @dataclass
 class OrderData(BaseData):
@@ -157,15 +160,20 @@ class OrderData(BaseData):
         )
         return req
 
+    def get_vt_orderid(self):
+        return self.vt_orderid
+
+    def setting_order_type(self, zq_type):
+        self.zq_type = zq_type
+
     def __str__(self):
-        return f'++' \
-               f'订单id:{self.vt_orderid}' \
+        return f'订单id:{self.vt_orderid}' \
                f'  类型: {self.type.value}' \
                f'  日期: {self.datetime}' \
                f'  方向: {self.direction.value}' \
                f'  价格: {self.price}' \
                f'  状态: {self.status.value}' \
-               f'++'
+
 
 
 @dataclass
@@ -192,6 +200,9 @@ class TradeData(BaseData):
         self.vt_symbol: str = f"{self.symbol}.{self.exchange.value}"
         self.vt_orderid: str = f"{self.gateway_name}.{self.orderid}"
         self.vt_tradeid: str = f"{self.gateway_name}.{self.tradeid}"
+
+    def __str__(self):
+        return f"订单id: {self.vt_orderid}  成交时间: {self.datetime} 方向: {self.direction.value} {self.offset.value} 成交价: {self.price}"
 
 
 @dataclass

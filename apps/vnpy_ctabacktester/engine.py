@@ -27,7 +27,7 @@ from apps.vnpy_ctastrategy.backtesting import (
 )
 
 # --------------------------zq--------------------------- #
-from apps.vnpy_ctastrategy.strategies.script.ScriptBase import ZQIntervalConvert
+from apps.vnpy_ctastrategy.strategies.script.ZQTools import ZQIntervalConvert
 
 APP_NAME = "CtaBacktester"
 

@@ -29,7 +29,7 @@ from .base import (
     StopOrderStatus,
     INTERVAL_DELTA_MAP
 )
-from .strategies.script.ScriptBase import ZQLoadBars, ZQIntervalConvert
+from .strategies.script.ZQTools import ZQLoadBars, ZQIntervalConvert
 from .template import CtaTemplate
 
 
@@ -250,6 +250,7 @@ class BacktestingEngine:
 
         # Use the rest of history data for running backtesting
         backtesting_data: list = self.history_data[ix:]
+
         if len(backtesting_data) <= 1:
             self.output("历史数据不足，回测终止")
             return
@@ -270,6 +271,7 @@ class BacktestingEngine:
             progress = min(ix / 10, 1)
             progress_bar: str = "=" * (ix + 1)
             self.output(f"回放进度：{progress_bar} [{progress:.0%}]")
+
 
         self.strategy.on_stop()
         self.output("历史数据回放结束")

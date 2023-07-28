@@ -7,7 +7,7 @@ from apps.vnpy_ctastrategy import CtaTemplate
 
 from core.trader.constant import Exchange, Interval
 from core.trader.object import BarData, TickData, TradeData
-from apps.vnpy_ctastrategy.strategies.script.ScriptBase import ZQLoadBars, ZQIntervalConvert, generator_localtime
+from apps.vnpy_ctastrategy.strategies.script.ZQTools import ZQLoadBars, ZQIntervalConvert, generator_localtime
 
 
 # class ZQTrendStrategy3:

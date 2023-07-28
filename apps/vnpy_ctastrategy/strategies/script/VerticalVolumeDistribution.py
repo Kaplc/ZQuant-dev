@@ -9,7 +9,7 @@ from datetime import datetime
 from apps.vnpy_ctastrategy.backtesting import load_bar_data
 from core.trader.constant import Exchange, Interval
 from core.trader.object import BarData
-from apps.vnpy_ctastrategy.strategies.script.ScriptBase import ScriptBase
+from apps.vnpy_ctastrategy.strategies.script.ZQTools import ScriptBase
 
 
 class VVD(ScriptBase):
