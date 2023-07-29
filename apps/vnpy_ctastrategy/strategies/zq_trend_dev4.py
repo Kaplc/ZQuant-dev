@@ -19,6 +19,7 @@ class ZQTrendStrategy4(CtaTemplate):
     # 参数
     tar_range = 6  # 影线幅度x0.1
     i = 10  # 止盈倍数x0.1
+    j = 25
     each_amount = 20  # 每笔风险
 
     #
@@ -27,8 +28,8 @@ class ZQTrendStrategy4(CtaTemplate):
     active_orders: List[ZQOrder] = []
     achievement_orders: List[ZQOrder] = []
 
-    parameters = ["tar_range", "i"]
-    variables = ["tar_range", "i"]
+    parameters = ["tar_range", "i", "j"]
+    variables = ["tar_range", "i", "J"]
 
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
         """"""
@@ -43,6 +44,7 @@ class ZQTrendStrategy4(CtaTemplate):
 
         self.tar_range /= 10
         self.i /= 10
+        self.j /= 10
         self.ss_sl_dict = {}
         self.active_orders = []
         self.achievement_orders = []
@@ -141,17 +143,43 @@ class ZQTrendStrategy4(CtaTemplate):
 
         if abs(upper_hatch_range) > self.tar_range:
             # 做空
-            if bar_entity_length >= abs(upper_hatch_length):  # 影线小于实体, 排除
-                return "none"
-            # print(f'short: {bar.datetime}')
-            return "short"
+            # if bar_entity_length >= abs(upper_hatch_length):  # 影线小于实体, 排除
+            #     return "none"
+
+            # 判断市场环境
+            if self.check_trend(bar):
+                return "short"
 
         if abs(lower_hatch_range) > self.tar_range:
             # 做多
-            if bar_entity_length >= abs(lower_hatch_length):
-                return False
-            # print(f'long: {bar.datetime}')
-            return "long"
+            # if bar_entity_length >= abs(lower_hatch_length):
+            #     return False
+
+            if self.check_trend(bar):
+                return "long"
+
+    def check_trend(self, bar):
+        """确认趋势环境"""
+        # 当前bar的索引
+        bar_index = self.cta_engine.history_data.index(bar)
+
+        # 获取前几根bar
+        bars = self.cta_engine.history_data[bar_index - 12:bar_index]
+
+        # 该区间的最大最小值幅度
+        max_price = bar.high_price
+        min_price = bar.low_price
+        for bar in bars:
+            if bar.high_price > max_price:
+                max_price = bar.high_price
+            if bar.low_price < min_price:
+                min_price = bar.low_price
+
+        if (abs(max_price - min_price) / abs((max_price+min_price)/2)) * 100 > self.j:
+            return False
+
+        return True
+
 
     def open_pos(self, direction, bar):
         """开仓"""
