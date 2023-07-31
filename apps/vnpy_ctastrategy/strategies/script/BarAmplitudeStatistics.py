@@ -9,6 +9,7 @@ from apps.vnpy_ctastrategy.strategies.script.ZQTools import ZQIntervalConvert, Z
 from apps.vnpy_ctastrategy.backtesting import load_bar_data
 from core.trader.constant import Exchange, Interval
 from core.trader.object import BarData
+from ZQTools import *
 
 parm = {
     '1m': 1000,
@@ -31,19 +32,13 @@ class BAS:
 
     def run(self, interval):
 
-        self.zq_interval = ZQIntervalConvert(interval)
-
-        # 获取K线原始数据
-        self.bars = load_bars_data(
-            symbol=self.symbol,
-            exchange=self.exchange,
-            interval=self.zq_interval.vnInterval,
+        self.bars = ZQLoadBars(
+            symbol='BTCUSDT',
+            exchange=Exchange.BINANCE,
+            zq_interval=interval,
             start=self.start,
-            end=self.end,
-        )
-        # 获取K线合成器
-        self.get_generator(self.bars)
-        self.bars = self.bar_generator.start(self.zq_interval.value)  # 合成新K线列表
+            end=self.end
+        ).load()
 
         # 先初始化字典格式
         self.res_dict = self.init_resDict()
@@ -131,7 +126,7 @@ class BAS:
 
 
 class BASH:
-
+    """统计影线幅度"""
     def __init__(self, symbol: str, exchange: Exchange, start: datetime, end: datetime):
         self.symbol: str = symbol
         self.exchange: Exchange = exchange
@@ -144,18 +139,26 @@ class BASH:
     def run(self, zq_interval):
 
         self.zq_interval = ZQIntervalConvert(zq_interval)
+        #
+        # # 获取K线原始数据
+        # self.bars = load_bars_data(
+        #     symbol=self.symbol,
+        #     exchange=self.exchange,
+        #     interval=self.zq_interval.vnInterval,
+        #     start=self.start,
+        #     end=self.end,
+        # )
+        # # 获取K线合成器
+        # self.get_generator(self.bars)
+        # self.bars: List[BarData] = self.bar_generator.start(self.zq_interval.value)  # 合成新K线列表
 
-        # 获取K线原始数据
-        self.bars = load_bars_data(
-            symbol=self.symbol,
-            exchange=self.exchange,
-            interval=self.zq_interval.vnInterval,
+        self.bars = ZQLoadBars(
+            symbol='BTCUSDT',
+            exchange=Exchange.BINANCE,
+            zq_interval=zq_interval,
             start=self.start,
-            end=self.end,
-        )
-        # 获取K线合成器
-        self.get_generator(self.bars)
-        self.bars: List[BarData] = self.bar_generator.start(self.zq_interval.value)  # 合成新K线列表
+            end=self.end
+        ).load()
 
         # 先初始化字典格式
         self.res_dict = self.init_resDict()
@@ -229,7 +232,7 @@ class BASH:
                 is90 = True
                 res_percent = str(key[0]) + '%'
                 print(f'{self.zq_interval}周期下，超过90%情况的K线幅度：>{res_percent}')
-            if total_percent >= 98 and is95 == False:
+            if total_percent >= 99.5 and is95 == False:
                 is95 = True
                 res_percent = str(key[0]) + '%'
                 print(f'{self.zq_interval}周期下，超过95%情况的K线幅度：>{res_percent}')
@@ -274,7 +277,7 @@ if __name__ == '__main__':
         symbol='BTCUSDT',
         exchange=Exchange.BINANCE,
         start=datetime(2020, 1, 1),
-        end=datetime(2023, 7, 10)
+        end=datetime(2021, 1, 1)
     )
 
     bash.run("15m")

@@ -72,13 +72,13 @@ class BacktesterManager(QtWidgets.QWidget):
         self.setWindowTitle("CTA回测")
 
         # Setting Part
-        self.class_combo: QtWidgets.QComboBox = QtWidgets.QComboBox()
+        self.class_combo: QtWidgets.QComboBox = QtWidgets.QComboBox()  # 下拉菜单
 
-        self.symbol_line: QtWidgets.QLineEdit = QtWidgets.QLineEdit("IF88.CFFEX")
+        self.symbol_line: QtWidgets.QLineEdit = QtWidgets.QLineEdit("IF88.CFFEX")  # 输入框
 
         self.interval_combo: QtWidgets.QComboBox = QtWidgets.QComboBox()
         for interval in Interval:
-            self.interval_combo.addItem(interval.value)
+            self.interval_combo.addItem(interval.value)  # 下拉菜单添加元素.addItem
 
         end_dt: datetime = datetime.now()
         start_dt: datetime = end_dt - timedelta(days=3 * 365)
@@ -94,14 +94,17 @@ class BacktesterManager(QtWidgets.QWidget):
             QtCore.QDate.currentDate()
         )
 
-        self.rate_line: QtWidgets.QLineEdit = QtWidgets.QLineEdit("0.000025")
-        self.slippage_line: QtWidgets.QLineEdit = QtWidgets.QLineEdit("0.2")
-        self.size_line: QtWidgets.QLineEdit = QtWidgets.QLineEdit("300")
-        self.pricetick_line: QtWidgets.QLineEdit = QtWidgets.QLineEdit("0.2")
-        self.capital_line: QtWidgets.QLineEdit = QtWidgets.QLineEdit("1000000")
+        self.rate_line: QtWidgets.QLineEdit = QtWidgets.QLineEdit("0.0004")  # 手续费
+        self.slippage_line: QtWidgets.QLineEdit = QtWidgets.QLineEdit("0.01")  # 交易滑点
+        self.size_line: QtWidgets.QLineEdit = QtWidgets.QLineEdit("1")  # 合约乘数
+        self.pricetick_line: QtWidgets.QLineEdit = QtWidgets.QLineEdit("0.2")  # 价格跳动
+        self.capital_line: QtWidgets.QLineEdit = QtWidgets.QLineEdit("10000")  # zid资金
 
         backtesting_button: QtWidgets.QPushButton = QtWidgets.QPushButton("开始回测")
         backtesting_button.clicked.connect(self.start_backtesting)
+
+        # test_button: QtWidgets.QPushButton = QtWidgets.QPushButton("1")
+        # test_button.clicked.connect(self.start_backtesting)
 
         optimization_button: QtWidgets.QPushButton = QtWidgets.QPushButton("参数优化")
         optimization_button.clicked.connect(self.start_optimization)
@@ -147,10 +150,11 @@ class BacktesterManager(QtWidgets.QWidget):
             edit_button,
             reload_button
         ]:
-            button.setFixedHeight(button.sizeHint().height() * 2)
+            button.setFixedHeight(button.sizeHint().height() * 2)  # 设置按钮高度
 
+        # 创建表单
         form: QtWidgets.QFormLayout = QtWidgets.QFormLayout()
-        form.addRow("交易策略", self.class_combo)
+        form.addRow("交易策略", self.class_combo)  # 参数：一个标签（以字符串形式表示），和一个输入控件（例如文本输入框、下拉框)等
         form.addRow("本地代码", self.symbol_line)
         form.addRow("K线周期", self.interval_combo)
         form.addRow("开始日期", self.start_date_edit)
@@ -161,12 +165,14 @@ class BacktesterManager(QtWidgets.QWidget):
         form.addRow("价格跳动", self.pricetick_line)
         form.addRow("回测资金", self.capital_line)
 
+        # 网格布局
         result_grid: QtWidgets.QGridLayout = QtWidgets.QGridLayout()
         result_grid.addWidget(self.trade_button, 0, 0)
         result_grid.addWidget(self.order_button, 0, 1)
         result_grid.addWidget(self.daily_button, 1, 0)
         result_grid.addWidget(self.candle_button, 1, 1)
 
+        # 垂直布局
         left_vbox: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
         left_vbox.addLayout(form)
         left_vbox.addWidget(backtesting_button)
@@ -636,7 +642,7 @@ class BacktestingSettingEditor(QtWidgets.QDialog):
     """
 
     def __init__(
-        self, class_name: str, parameters: dict
+            self, class_name: str, parameters: dict
     ) -> None:
         """"""
         super(BacktestingSettingEditor, self).__init__()
@@ -810,7 +816,7 @@ class BacktesterChart(pg.GraphicsLayoutWidget):
         self.loss_pnl_bar.setOpts(x=loss_pnl_x, height=loss_pnl_height)
 
         # Set data for pnl distribution 设置pnl分布的数据
-        hist, x = np.histogram(df["net_pnl"], bins="auto")
+        hist, x = np.histogram(df["net_pnl"], bins=200, density=True)
         x = x[:-1]
         self.distribution_curve.setData(x, hist)
 
@@ -844,7 +850,7 @@ class OptimizationSettingEditor(QtWidgets.QDialog):
     }
 
     def __init__(
-        self, class_name: str, parameters: dict
+            self, class_name: str, parameters: dict
     ) -> None:
         """"""
         super().__init__()
@@ -979,7 +985,7 @@ class OptimizationResultMonitor(QtWidgets.QDialog):
     """
 
     def __init__(
-        self, result_values: list, target_display: str
+            self, result_values: list, target_display: str
     ) -> None:
         """"""
         super().__init__()
@@ -1131,11 +1137,11 @@ class BacktestingResultDialog(QtWidgets.QDialog):
     """"""
 
     def __init__(
-        self,
-        main_engine: MainEngine,
-        event_engine: EventEngine,
-        title: str,
-        table_class: QtWidgets.QTableWidget
+            self,
+            main_engine: MainEngine,
+            event_engine: EventEngine,
+            title: str,
+            table_class: QtWidgets.QTableWidget
     ) -> None:
         """"""
         super().__init__()

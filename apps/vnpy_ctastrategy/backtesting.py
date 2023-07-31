@@ -160,56 +160,26 @@ class BacktestingEngine:
 
         self.history_data.clear()  # Clear previously loaded history data 清除以前加载的历史数据
 
-        # Load 30 days of data each time and allow for progress update 每次加载30天的数据，并允许进度更新
-        total_days: int = (self.end - self.start).days
-        progress_days: int = max(int(total_days / 10), 1)
-        progress_delta: timedelta = timedelta(days=progress_days)
-        interval_delta: timedelta = INTERVAL_DELTA_MAP[self.interval]
+        # 数据库加载K线
+        if self.mode == BacktestingMode.BAR:
 
-        start: datetime = self.start
-        end: datetime = self.start + progress_delta
-        progress = 0
+            data: List[BarData] = ZQLoadBars(
+                symbol=self.symbol,
+                exchange=self.exchange,
+                zq_interval=self.interval.value,
+                start=self.start,
+                end=self.end
+            ).load()
 
-        while start < self.end:
-            progress_bar: str = "#" * int(progress * 10 + 1)
-            self.output(f"加载进度：{progress_bar} [{progress:.0%}]")
+        else:
+            data: List[TickData] = load_tick_data(
+                self.symbol,
+                self.exchange,
+                self.start,
+                self.end
+            )
 
-            end: datetime = min(end, self.end)  # Make sure end time stays within set range
-            # 数据库加载K线
-            if self.mode == BacktestingMode.BAR:
-
-                data: List[BarData] = ZQLoadBars(
-                    symbol=self.symbol,
-                    exchange=self.exchange,
-                    zq_interval=self.interval.value,
-                    start=start,
-                    end=end
-                ).load()
-
-                # data: List[BarData] = load_bar_data(
-                #     self.symbol,
-                #     self.exchange,
-                #     self.interval,
-                #     start,
-                #     end
-                # )
-
-            else:
-                data: List[TickData] = load_tick_data(
-                    self.symbol,
-                    self.exchange,
-                    start,
-                    end
-                )
-
-            self.history_data.extend(data)
-
-            progress += progress_days / total_days
-            progress = min(progress, 1)
-
-            start = end + interval_delta
-            end += progress_delta
-            pass
+        self.history_data = data
 
         self.output(f"历史数据加载完成，数据量：{len(self.history_data)}")
 
@@ -271,7 +241,6 @@ class BacktestingEngine:
             progress = min(ix / 10, 1)
             progress_bar: str = "=" * (ix + 1)
             self.output(f"回放进度：{progress_bar} [{progress:.0%}]")
-
 
         self.strategy.on_stop()
         self.output("历史数据回放结束")

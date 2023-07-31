@@ -19,17 +19,15 @@ class ZQTrendStrategy4(CtaTemplate):
     # 参数
     tar_range = 6  # 影线幅度x0.1
     i = 10  # 止盈倍数x0.1
-    j = 25
+    # j = 30
     each_amount = 20  # 每笔风险
 
-    #
-    ss_sl_dict = {}
     is_long = None
     active_orders: List[ZQOrder] = []
     achievement_orders: List[ZQOrder] = []
 
-    parameters = ["tar_range", "i", "j"]
-    variables = ["tar_range", "i", "J"]
+    parameters = ["tar_range", "i"]
+    variables = ["tar_range", "i"]
 
     def __init__(self, cta_engine, strategy_name, vt_symbol, setting):
         """"""
@@ -44,7 +42,7 @@ class ZQTrendStrategy4(CtaTemplate):
 
         self.tar_range /= 10
         self.i /= 10
-        self.j /= 10
+        # self.j /= 10
         self.ss_sl_dict = {}
         self.active_orders = []
         self.achievement_orders = []
@@ -61,8 +59,26 @@ class ZQTrendStrategy4(CtaTemplate):
         """
         Callback when strategy is stopped.
         """
-        self.write_log("策略停止")
+        surplus_count = 0
+        loss_count = 0
+        total_profit = 0
 
+        for achievement_order in self.achievement_orders:
+            achievement_order.cal()
+            print(f'{achievement_order} {achievement_order.profit}')
+
+            if achievement_order.profit > 0:
+                surplus_count += 1
+            else:
+                loss_count += 1
+
+            total_profit += achievement_order.profit
+            print(f'利润: {round(total_profit, 4)}')
+
+        print(f'盈利: {surplus_count}笔  亏损: {loss_count}笔  胜率: {round(surplus_count / (surplus_count + loss_count), 2)}')
+        print(f'利润: {round(total_profit, 4)}')
+
+        self.write_log("策略停止")
         self.put_event()
 
     def on_bar(self, bar: BarData):
@@ -89,6 +105,7 @@ class ZQTrendStrategy4(CtaTemplate):
             if zq_order.state == ZQOrderState.Trading and zq_order.stop_surplus_order is not None and zq_order.stop_loss_order is not None:
                 # 订单状态为持仓中且有止盈止损单才进行止盈止损
                 self.move_stop_loss(bar, zq_order)
+
 
         self.put_event()
 
@@ -143,20 +160,24 @@ class ZQTrendStrategy4(CtaTemplate):
 
         if abs(upper_hatch_range) > self.tar_range:
             # 做空
-            # if bar_entity_length >= abs(upper_hatch_length):  # 影线小于实体, 排除
-            #     return "none"
+            if bar_entity_length >= abs(upper_hatch_length):  # 影线小于实体, 排除
+                return False
 
             # 判断市场环境
-            if self.check_trend(bar):
-                return "short"
+            # if not self.check_trend(bar):
+            #     return False
+
+            return "short"
 
         if abs(lower_hatch_range) > self.tar_range:
             # 做多
-            # if bar_entity_length >= abs(lower_hatch_length):
+            if bar_entity_length >= abs(lower_hatch_length):
+                return False
+
+            # if not self.check_trend(bar):
             #     return False
 
-            if self.check_trend(bar):
-                return "long"
+            return "long"
 
     def check_trend(self, bar):
         """确认趋势环境"""
@@ -164,22 +185,25 @@ class ZQTrendStrategy4(CtaTemplate):
         bar_index = self.cta_engine.history_data.index(bar)
 
         # 获取前几根bar
-        bars = self.cta_engine.history_data[bar_index - 12:bar_index]
+        # bars = self.cta_engine.history_data[bar_index - 12:bar_index]
 
-        # 该区间的最大最小值幅度
-        max_price = bar.high_price
-        min_price = bar.low_price
-        for bar in bars:
-            if bar.high_price > max_price:
-                max_price = bar.high_price
-            if bar.low_price < min_price:
-                min_price = bar.low_price
+        # # 该区间的最大最小值幅度
+        # max_price = bar.high_price
+        # min_price = bar.low_price
+        # for bar in bars:
+        #     if bar.high_price > max_price:
+        #         max_price = bar.high_price
+        #     if bar.low_price < min_price:
+        #         min_price = bar.low_price
 
-        if (abs(max_price - min_price) / abs((max_price+min_price)/2)) * 100 > self.j:
+        # 获取前几根bar的最大最小值幅度
+        max_price = max(bar.high_price, *[bar.high_price for bar in self.cta_engine.history_data[bar_index - 12:bar_index]])
+        min_price = min(bar.low_price, *[bar.low_price for bar in self.cta_engine.history_data[bar_index - 12:bar_index]])
+
+        if (abs(max_price - min_price) / abs((max_price + min_price) / 2)) * 100 > self.j:
             return False
 
         return True
-
 
     def open_pos(self, direction, bar):
         """开仓"""
@@ -262,6 +286,8 @@ class ZQTrendStrategy4(CtaTemplate):
                     new_stop_loss_order = self.sell(bar.close_price - stop_loss_distance, zq_order.stop_loss_order.volume, stop=True)  # 重新挂单
 
                     zq_order.stop_loss_order = self.cta_engine.stop_orders[new_stop_loss_order[0]]  # 修改最新的止损单
+                    zq_order.move_stop_loss = True  # 打上当前订单启动了移动止损
+
                     if self.debug:
                         print(f'最新移动止损 {self.cta_engine.stop_orders[new_stop_loss_order[0]]}')
 
@@ -271,6 +297,8 @@ class ZQTrendStrategy4(CtaTemplate):
                     new_stop_loss_order = self.sell(bar.close_price - stop_loss_distance, zq_order.stop_loss_order.volume, stop=True)  # 重新挂单
 
                     zq_order.stop_loss_order = self.cta_engine.stop_orders[new_stop_loss_order[0]]
+                    zq_order.move_stop_loss = True
+
                     if self.debug:
                         print(f'最新移动止损 {self.cta_engine.stop_orders[new_stop_loss_order[0]]}')
 
@@ -284,6 +312,8 @@ class ZQTrendStrategy4(CtaTemplate):
                     new_stop_loss_order = self.cover(bar.close_price + stop_loss_distance, zq_order.stop_loss_order.volume, stop=True)
 
                     zq_order.stop_loss_order = self.cta_engine.stop_orders[new_stop_loss_order[0]]
+                    zq_order.move_stop_loss = True
+
                     if self.debug:
                         print(f'最新移动止损 {self.cta_engine.stop_orders[new_stop_loss_order[0]]}')
 
@@ -293,6 +323,8 @@ class ZQTrendStrategy4(CtaTemplate):
                     new_stop_loss_order = self.cover(bar.close_price + stop_loss_distance, zq_order.stop_loss_order.volume, stop=True)
 
                     zq_order.stop_loss_order = self.cta_engine.stop_orders[new_stop_loss_order[0]]
+                    zq_order.move_stop_loss = True
+
                     if self.debug:
                         print(f'最新移动止损 {self.cta_engine.stop_orders[new_stop_loss_order[0]]}')
 
@@ -310,7 +342,7 @@ class ZQTrendStrategy4(CtaTemplate):
         for zq_order in self.active_orders:
             zq_order.update_order_state()  # 有成交就更新订单状态
             # 移除已经止盈止损的
-            if zq_order.state == ZQOrderState.Stop_Loss or zq_order.state == ZQOrderState.Stop_Surplus:
+            if zq_order.state == ZQOrderState.Stop_Loss or zq_order.state == ZQOrderState.Stop_Surplus or zq_order.state == ZQOrderState.Move_Stop_loss:
                 self.achievement_orders.append(zq_order)
                 self.active_orders.remove(zq_order)
 
